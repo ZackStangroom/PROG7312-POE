@@ -1,0 +1,440 @@
+    html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin-bottom: 0;
+  background-color: #f8f9fc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Navbar Styling */
+.navbar {
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  text-decoration: none;
+}
+
+.brand-icon {
+  background: #4285f4;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 20px;
+}
+
+.brand-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.2;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem !important;
+  color: #666 !important;
+  text-decoration: none;
+  border-radius: 6px;
+  margin: 0 4px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: #f0f0f0;
+  color: #4285f4 !important;
+}
+
+.nav-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  color: white;
+  padding: 80px 0;
+  margin: -3rem -15px 0 -15px;
+}
+
+.hero-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-hero {
+  padding: 12px 24px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: white;
+  color: #4285f4;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Service Cards Section */
+.service-cards-section {
+  padding: 60px 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.service-card-blue {
+  background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+  color: white;
+}
+
+.service-card-green {
+  background: linear-gradient(135deg, #34a853 0%, #137333 100%);
+  color: white;
+}
+
+.service-card-purple {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+  color: white;
+}
+
+.service-card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.service-card h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.service-card p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Service Impact Section */
+.service-impact-section {
+  padding: 40px 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.impact-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.impact-card h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.impact-item {
+  padding: 20px 0;
+}
+
+.impact-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  background: #f0f7ff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.impact-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #4285f4;
+  margin-bottom: 0.5rem;
+}
+
+.impact-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Emergency Services Section */
+.emergency-section {
+  padding: 40px 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.emergency-card {
+  background: linear-gradient(135deg, #ea4335 0%, #d33b2c 100%);
+  border-radius: 12px;
+  padding: 40px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);
+}
+
+.emergency-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.emergency-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.emergency-item {
+  padding: 20px 0;
+}
+
+.emergency-item h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.emergency-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* Latest Updates Section */
+.updates-section {
+  padding: 40px 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.updates-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.updates-card h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.update-item {
+  display: flex;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.update-item:last-child {
+  border-bottom: none;
+}
+
+.update-line {
+  width: 4px;
+  border-radius: 2px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.update-line-blue {
+  background: #4285f4;
+}
+
+.update-line-green {
+  background: #34a853;
+}
+
+.update-line-orange {
+  background: #ff9800;
+}
+
+.update-content h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.update-content p {
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Footer */
+.footer {
+  background: #2c3e50;
+  color: white;
+  padding: 50px 0 20px;
+  margin-top: 60px;
+}
+
+.footer h5 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.footer-content p {
+  color: #bdc3c7;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.footer hr {
+  border-color: #34495e;
+  margin: 30px 0 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2.2rem;
+  }
+  
+  .hero-section p {
+    font-size: 1.1rem;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+  }
+  
+  .service-cards-section,
+  .service-impact-section,
+  .emergency-section,
+  .updates-section {
+    padding: 30px 15px;
+  }
+  
+  .impact-card,
+  .emergency-card,
+  .updates-card {
+    padding: 30px 20px;
+  }
+  
+  .impact-number {
+    font-size: 2rem;
+  }
+  
+  .emergency-number {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-section {
+    padding: 60px 0;
+  }
+  
+  .hero-section h1 {
+    font-size: 1.8rem;
+  }
+  
+  .btn-hero {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .service-card {
+    height: auto;
+    padding: 25px;
+  }
+}
