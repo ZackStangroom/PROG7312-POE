@@ -1,3 +1,6 @@
+using PROG7312_POE.Services;
+using PROG7312_POE.Services.Interfaces;
+
 namespace PROG7312_POE
 {
     public class Program
@@ -8,6 +11,10 @@ namespace PROG7312_POE
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            
+            // Register custom services - register by interface
+            builder.Services.AddSingleton<IIssueReportRepository, IssueReportRepository>();
+            builder.Services.AddScoped<IIssueReportService, IssueReportService>();
 
             var app = builder.Build();
 
