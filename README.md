@@ -11,8 +11,6 @@ A comprehensive municipal services application built with ASP.NET Core MVC (.NET
 - [Running the Application](#running-the-application)
 - [How to Use the Application](#how-to-use-the-application)
 - [Data Structures Implementation](#data-structures-implementation)
-- [Project Structure](#project-structure)
-- [Troubleshooting](#troubleshooting)
 
 ## Features
 
