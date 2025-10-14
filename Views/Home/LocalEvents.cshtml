@@ -1,0 +1,357 @@
+﻿@{
+    ViewData["Title"] = "Local Events";
+}
+
+<!-- Page Header -->
+<div class="report-header">
+    <div class="container">
+        <a href="@Url.Action("Index", "Home")" class="back-link">← Back to Home</a>
+        <h1 class="page-title">Local Events & Announcements</h1>
+        <p class="page-subtitle">Stay informed about community events, municipal announcements, and activities in Cape Town.</p>
+    </div>
+</div>
+
+<!-- Page Content -->
+<div class="report-content">
+    <div class="container">
+        
+        <!-- Search and Filter Section -->
+        <div class="form-card">
+            <h3>Find Events</h3>
+            <p class="subtitle">Search for events by category, date, or location.</p>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">🔍 Search Events</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search events...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">📂 Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Community">Community</option>
+                        <option value="Sports">Sports & Recreation</option>
+                        <option value="Arts">Arts & Culture</option>
+                        <option value="Education">Education</option>
+                        <option value="Health">Health & Wellness</option>
+                        <option value="Environment">Environment</option>
+                        <option value="Municipal">Municipal Meetings</option>
+                        <option value="Safety">Public Safety</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">📅 Date Range</label>
+                    <select class="form-select" id="dateFilter">
+                        <option value="">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="upcoming">Upcoming</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Events Section -->
+        <div class="info-card">
+            <h3>Featured Events</h3>
+            <div class="row g-4" id="featuredEvents">
+                
+                <!-- Event Card 1 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Community" data-date="2025-10-18">
+                        <div class="event-badge event-badge-community">Community</div>
+                        <div class="event-date">
+                            <div class="event-day">18</div>
+                            <div class="event-month">OCT</div>
+                        </div>
+                        <h4 class="event-title">Cape Town Community Clean-Up</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>9:00 AM - 1:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>Sea Point Promenade</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Join us for a community beach clean-up event. Help keep our beaches beautiful!</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Event Card 2 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Arts" data-date="2025-10-22">
+                        <div class="event-badge event-badge-arts">Arts & Culture</div>
+                        <div class="event-date">
+                            <div class="event-day">22</div>
+                            <div class="event-month">OCT</div>
+                        </div>
+                        <h4 class="event-title">Local Arts & Crafts Market</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>10:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>Green Point Park</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Discover local artisans and craftspeople showcasing their work.</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Event Card 3 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Municipal" data-date="2025-10-25">
+                        <div class="event-badge event-badge-municipal">Municipal</div>
+                        <div class="event-date">
+                            <div class="event-day">25</div>
+                            <div class="event-month">OCT</div>
+                        </div>
+                        <h4 class="event-title">City Council Public Meeting</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>6:00 PM - 8:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>Cape Town Civic Centre</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Public consultation on upcoming infrastructure projects.</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Event Card 4 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Sports" data-date="2025-10-28">
+                        <div class="event-badge event-badge-sports">Sports</div>
+                        <div class="event-date">
+                            <div class="event-day">28</div>
+                            <div class="event-month">OCT</div>
+                        </div>
+                        <h4 class="event-title">Cape Town Marathon</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>6:00 AM - 12:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>City Centre</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Annual city marathon featuring 10K, 21K, and 42K routes.</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Event Card 5 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Health" data-date="2025-11-02">
+                        <div class="event-badge event-badge-health">Health</div>
+                        <div class="event-date">
+                            <div class="event-day">02</div>
+                            <div class="event-month">NOV</div>
+                        </div>
+                        <h4 class="event-title">Free Health Screening Day</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>8:00 AM - 4:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>Khayelitsha Community Centre</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Free health screenings including blood pressure, diabetes, and cholesterol.</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+                <!-- Event Card 6 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card" data-category="Environment" data-date="2025-11-05">
+                        <div class="event-badge event-badge-environment">Environment</div>
+                        <div class="event-date">
+                            <div class="event-day">05</div>
+                            <div class="event-month">NOV</div>
+                        </div>
+                        <h4 class="event-title">Tree Planting Initiative</h4>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-icon">🕐</span>
+                                <span>9:00 AM - 12:00 PM</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-icon">📍</span>
+                                <span>Newlands Forest</span>
+                            </div>
+                        </div>
+                        <p class="event-description">Help us plant 500 trees to combat climate change and beautify our city.</p>
+                        <button class="btn-event-details">View Details</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
+                <h4>No Events Found</h4>
+                <p>Try adjusting your search criteria or filters.</p>
+            </div>
+        </div>
+
+        <!-- Information Cards Row -->
+        <div class="info-cards-row">
+            <!-- Event Categories Card -->
+            <div class="process-card">
+                <h3>Event Categories</h3>
+                
+                <div class="category-list">
+                    <div class="category-item">
+                        <span class="category-icon">👥</span>
+                        <div>
+                            <strong>Community Events</strong>
+                            <p>Neighborhood meetings, clean-ups, and social gatherings</p>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">🎨</span>
+                        <div>
+                            <strong>Arts & Culture</strong>
+                            <p>Markets, exhibitions, performances, and festivals</p>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">🏃</span>
+                        <div>
+                            <strong>Sports & Recreation</strong>
+                            <p>Marathons, tournaments, and fitness activities</p>
+                        </div>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">🏛️</span>
+                        <div>
+                            <strong>Municipal Meetings</strong>
+                            <p>Public consultations and council meetings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscribe Card -->
+            <div class="process-card">
+                <h3>Stay Updated</h3>
+                
+                <p>Subscribe to receive notifications about upcoming events in your area.</p>
+                
+                <div class="subscribe-form">
+                    <label class="form-label">📧 Email Address</label>
+                    <input type="email" class="form-control" placeholder="your.email@example.com">
+                    
+                    <label class="form-label" style="margin-top: 15px;">📍 Preferred Areas</label>
+                    <select class="form-select" multiple size="4">
+                        <option>City Centre</option>
+                        <option>Northern Suburbs</option>
+                        <option>Southern Suburbs</option>
+                        <option>Atlantic Seaboard</option>
+                        <option>Cape Flats</option>
+                    </select>
+                    
+                    <button class="btn-submit" style="margin-top: 20px; width: 100%;">Subscribe to Updates</button>
+                </div>
+
+                <p class="response-note" style="margin-top: 15px;">
+                    You can unsubscribe at any time. We respect your privacy.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const eventCards = document.querySelectorAll('.event-card');
+        const noResults = document.getElementById('noResults');
+
+        function filterEvents() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            const selectedDate = dateFilter.value;
+            let visibleCount = 0;
+
+            eventCards.forEach(card => {
+                const title = card.querySelector('.event-title').textContent.toLowerCase();
+                const description = card.querySelector('.event-description').textContent.toLowerCase();
+                const category = card.dataset.category;
+                const eventDate = new Date(card.dataset.date);
+                const today = new Date();
+
+                // Search filter
+                const matchesSearch = searchTerm === '' || 
+                    title.includes(searchTerm) || 
+                    description.includes(searchTerm);
+
+                // Category filter
+                const matchesCategory = selectedCategory === '' || category === selectedCategory;
+
+                // Date filter
+                let matchesDate = true;
+                if (selectedDate === 'today') {
+                    matchesDate = eventDate.toDateString() === today.toDateString();
+                } else if (selectedDate === 'week') {
+                    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    matchesDate = eventDate >= today && eventDate <= weekFromNow;
+                } else if (selectedDate === 'month') {
+                    const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                    matchesDate = eventDate >= today && eventDate <= monthFromNow;
+                } else if (selectedDate === 'upcoming') {
+                    matchesDate = eventDate >= today;
+                }
+
+                // Show or hide card
+                if (matchesSearch && matchesCategory && matchesDate) {
+                    card.parentElement.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.parentElement.style.display = 'none';
+                }
+            });
+
+            // Show "no results" message if no cards are visible
+            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        // Add event listeners
+        searchInput.addEventListener('input', filterEvents);
+        categoryFilter.addEventListener('change', filterEvents);
+        dateFilter.addEventListener('change', filterEvents);
+
+        // Event details button handlers
+        document.querySelectorAll('.btn-event-details').forEach(button => {
+            button.addEventListener('click', function() {
+                const eventCard = this.closest('.event-card');
+                const eventTitle = eventCard.querySelector('.event-title').textContent;
+                alert(`Event details for: ${eventTitle}\n\nMore details coming soon!`);
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

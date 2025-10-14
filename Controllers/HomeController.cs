@@ -73,6 +73,12 @@ namespace PROG7312_POE.Controllers
             return View(model);
         }
 
+        // GET: Home/LocalEvents
+        public IActionResult LocalEvents()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
