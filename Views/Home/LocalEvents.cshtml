@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<PROG7312_POE.Models.LocalEvent>
+
+@{
     ViewData["Title"] = "Local Events";
 }
 
@@ -55,152 +57,69 @@
         <!-- Featured Events Section -->
         <div class="info-card">
             <h3>Featured Events</h3>
-            <div class="row g-4" id="featuredEvents">
-                
-                <!-- Event Card 1 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Community" data-date="2025-10-18">
-                        <div class="event-badge event-badge-community">Community</div>
-                        <div class="event-date">
-                            <div class="event-day">18</div>
-                            <div class="event-month">OCT</div>
-                        </div>
-                        <h4 class="event-title">Cape Town Community Clean-Up</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>9:00 AM - 1:00 PM</span>
+            
+            @if (Model != null && Model.Any())
+            {
+                <p class="subtitle">📊 Displaying @Model.Count() events from Dictionary-based repository | <span id="visibleEventsCount">@Math.Min(Model.Count(), 17)</span> visible</p>
+            }
+            
+            <!-- Scrollable Events Container -->
+            <div class="events-scroll-container">
+                <div class="row g-4" id="featuredEvents">
+                    
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var evt in Model)
+                        {
+                            var categoryClass = evt.Category.ToLower() switch
+                            {
+                                "community" => "event-badge-community",
+                                "arts" => "event-badge-arts",
+                                "municipal" => "event-badge-municipal",
+                                "sports" => "event-badge-sports",
+                                "health" => "event-badge-health",
+                                "environment" => "event-badge-environment",
+                                "education" => "event-badge-education",
+                                "safety" => "event-badge-safety",
+                                _ => "event-badge-community"
+                            };
+                            
+                            <div class="col-md-6 col-lg-4">
+                                <div class="event-card" data-category="@evt.Category" data-date="@evt.EventDate.ToString("yyyy-MM-dd")" data-event-id="@evt.Id">
+                                    <div class="event-badge @categoryClass">@evt.Category</div>
+                                    <div class="event-date">
+                                        <div class="event-day">@evt.EventDate.Day</div>
+                                        <div class="event-month">@evt.EventDate.ToString("MMM").ToUpper()</div>
+                                    </div>
+                                    <h4 class="event-title">@evt.Title</h4>
+                                    <div class="event-details">
+                                        <div class="event-detail-item">
+                                            <span class="event-icon">🕐</span>
+                                            <span>@evt.EventDate.ToString("h:mm tt")</span>
+                                        </div>
+                                        <div class="event-detail-item">
+                                            <span class="event-icon">📍</span>
+                                            <span>@evt.Location</span>
+                                        </div>
+                                    </div>
+                                    <p class="event-description">@evt.Description</p>
+                                    <button class="btn-event-details" data-event-id="@evt.Id">View Details</button>
+                                </div>
                             </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>Sea Point Promenade</span>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div style="text-align: center; padding: 40px; color: #666;">
+                                <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
+                                <h4>No Events Available</h4>
+                                <p>Dictionary is empty. Events will be seeded on next page load.</p>
                             </div>
                         </div>
-                        <p class="event-description">Join us for a community beach clean-up event. Help keep our beaches beautiful!</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
-                </div>
+                    }
 
-                <!-- Event Card 2 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Arts" data-date="2025-10-22">
-                        <div class="event-badge event-badge-arts">Arts & Culture</div>
-                        <div class="event-date">
-                            <div class="event-day">22</div>
-                            <div class="event-month">OCT</div>
-                        </div>
-                        <h4 class="event-title">Local Arts & Crafts Market</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>10:00 AM - 5:00 PM</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>Green Point Park</span>
-                            </div>
-                        </div>
-                        <p class="event-description">Discover local artisans and craftspeople showcasing their work.</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
                 </div>
-
-                <!-- Event Card 3 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Municipal" data-date="2025-10-25">
-                        <div class="event-badge event-badge-municipal">Municipal</div>
-                        <div class="event-date">
-                            <div class="event-day">25</div>
-                            <div class="event-month">OCT</div>
-                        </div>
-                        <h4 class="event-title">City Council Public Meeting</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>6:00 PM - 8:00 PM</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>Cape Town Civic Centre</span>
-                            </div>
-                        </div>
-                        <p class="event-description">Public consultation on upcoming infrastructure projects.</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
-                </div>
-
-                <!-- Event Card 4 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Sports" data-date="2025-10-28">
-                        <div class="event-badge event-badge-sports">Sports</div>
-                        <div class="event-date">
-                            <div class="event-day">28</div>
-                            <div class="event-month">OCT</div>
-                        </div>
-                        <h4 class="event-title">Cape Town Marathon</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>6:00 AM - 12:00 PM</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>City Centre</span>
-                            </div>
-                        </div>
-                        <p class="event-description">Annual city marathon featuring 10K, 21K, and 42K routes.</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
-                </div>
-
-                <!-- Event Card 5 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Health" data-date="2025-11-02">
-                        <div class="event-badge event-badge-health">Health</div>
-                        <div class="event-date">
-                            <div class="event-day">02</div>
-                            <div class="event-month">NOV</div>
-                        </div>
-                        <h4 class="event-title">Free Health Screening Day</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>8:00 AM - 4:00 PM</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>Khayelitsha Community Centre</span>
-                            </div>
-                        </div>
-                        <p class="event-description">Free health screenings including blood pressure, diabetes, and cholesterol.</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
-                </div>
-
-                <!-- Event Card 6 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="event-card" data-category="Environment" data-date="2025-11-05">
-                        <div class="event-badge event-badge-environment">Environment</div>
-                        <div class="event-date">
-                            <div class="event-day">05</div>
-                            <div class="event-month">NOV</div>
-                        </div>
-                        <h4 class="event-title">Tree Planting Initiative</h4>
-                        <div class="event-details">
-                            <div class="event-detail-item">
-                                <span class="event-icon">🕐</span>
-                                <span>9:00 AM - 12:00 PM</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-icon">📍</span>
-                                <span>Newlands Forest</span>
-                            </div>
-                        </div>
-                        <p class="event-description">Help us plant 500 trees to combat climate change and beautify our city.</p>
-                        <button class="btn-event-details">View Details</button>
-                    </div>
-                </div>
-
             </div>
 
             <!-- No Results Message -->
@@ -208,6 +127,11 @@
                 <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
                 <h4>No Events Found</h4>
                 <p>Try adjusting your search criteria or filters.</p>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="scroll-indicator" id="scrollIndicator">
+                <span>⬇️ Scroll down to see more events ⬇️</span>
             </div>
         </div>
 
@@ -280,6 +204,25 @@
     </div>
 </div>
 
+<!-- Dictionary Debug Info (remove in production) -->
+@if (Model != null)
+{
+    <div class="alert alert-success" role="alert">
+        <strong>✅ Dictionary Active!</strong><br/>
+        <small>
+            - Total events in model: @Model.Count()<br/>
+            - Events are stored in: Dictionary&lt;string, LocalEvent&gt;, SortedDictionary&lt;DateTime, List&lt;LocalEvent&gt;&gt;<br/>
+            - Categories: @string.Join(", ", Model.Select(e => e.Category).Distinct())
+        </small>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>❌ Dictionary NOT working!</strong> Model is null.
+    </div>
+}
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchInput');
@@ -287,6 +230,36 @@
         const dateFilter = document.getElementById('dateFilter');
         const eventCards = document.querySelectorAll('.event-card');
         const noResults = document.getElementById('noResults');
+        const scrollContainer = document.querySelector('.events-scroll-container');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        const visibleEventsCount = document.getElementById('visibleEventsCount');
+
+        // Function to update visible events count
+        function updateVisibleCount() {
+            const visibleCards = Array.from(eventCards).filter(card => 
+                card.parentElement.style.display !== 'none'
+            );
+            if (visibleEventsCount) {
+                visibleEventsCount.textContent = visibleCards.length;
+            }
+        }
+
+        // Hide scroll indicator when scrolled to bottom
+        if (scrollContainer && scrollIndicator) {
+            scrollContainer.addEventListener('scroll', function() {
+                const isAtBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + 50;
+                if (isAtBottom) {
+                    scrollIndicator.classList.add('hidden');
+                } else {
+                    scrollIndicator.classList.remove('hidden');
+                }
+            });
+
+            // Check if scrollable on load
+            if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+                scrollIndicator.classList.add('hidden');
+            }
+        }
 
         function filterEvents() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -333,7 +306,25 @@
             });
 
             // Show "no results" message if no cards are visible
-            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            const hasVisibleCards = visibleCount > 0;
+            noResults.style.display = hasVisibleCards ? 'none' : 'block';
+            
+            // Update visible count
+            updateVisibleCount();
+
+            // Check if scroll indicator should be shown
+            if (scrollContainer && scrollIndicator) {
+                if (hasVisibleCards && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+                    scrollIndicator.classList.remove('hidden');
+                } else {
+                    scrollIndicator.classList.add('hidden');
+                }
+            }
+
+            // Reset scroll position when filtering
+            if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+            }
         }
 
         // Add event listeners
@@ -349,6 +340,9 @@
                 alert(`Event details for: ${eventTitle}\n\nMore details coming soon!`);
             });
         });
+
+        // Initial count update
+        updateVisibleCount();
     });
 </script>
 

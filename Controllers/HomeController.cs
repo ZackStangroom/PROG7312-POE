@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using PROG7312_POE.Models;
 using PROG7312_POE.Services.Interfaces;
+using PROG7312_POE.Data;
 
 namespace PROG7312_POE.Controllers
 {
@@ -9,11 +10,13 @@ namespace PROG7312_POE.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IIssueReportService _issueReportService;
+        private readonly IEventRepository _eventRepository;
 
-        public HomeController(ILogger<HomeController> logger, IIssueReportService issueReportService)
+        public HomeController(ILogger<HomeController> logger, IIssueReportService issueReportService, IEventRepository eventRepository)
         {
             _logger = logger;
             _issueReportService = issueReportService;
+            _eventRepository = eventRepository;
         }
 
         public IActionResult Index()
@@ -76,7 +79,28 @@ namespace PROG7312_POE.Controllers
         // GET: Home/LocalEvents
         public IActionResult LocalEvents()
         {
-            return View();
+            // Check if dictionary is empty and seed it
+            if (_eventRepository.GetTotalCount() == 0)
+            {
+                SeedEventsIntoDictionary();
+            }
+            
+            // Get events from dictionary and pass to view
+            var events = _eventRepository.GetUpcoming().ToList();
+            return View(events);
+        }
+
+        private void SeedEventsIntoDictionary()
+        {
+            // Get sample events from the separate data file
+            var sampleEvents = EventSeedData.GetSampleEvents();
+
+            foreach (var evt in sampleEvents)
+            {
+                _eventRepository.Add(evt);
+            }
+            
+            _logger.LogInformation($"Seeded {sampleEvents.Count} events into dictionary");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
