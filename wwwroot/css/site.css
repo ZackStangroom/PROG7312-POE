@@ -1,4 +1,4 @@
-    html {
+html {
   font-size: 14px;
   position: relative;
   min-height: 100%;
@@ -712,99 +712,224 @@ body {
   line-height: 1.4;
 }
 
-/* Responsive Design */
+/* Event Card Styles */
+.event-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.event-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.event-badge-community { 
+  background: #4285f4; 
+}
+
+.event-badge-arts { 
+  background: #ea4335; 
+}
+
+.event-badge-municipal { 
+  background: #fbbc04; 
+  color: #333; 
+}
+
+.event-badge-sports { 
+  background: #34a853; 
+}
+
+.event-badge-health { 
+  background: #ff6d00; 
+}
+
+.event-badge-environment { 
+  background: #0f9d58; 
+}
+
+.event-date {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.event-day {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.event-month {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.event-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 15px;
+}
+
+.event-details {
+  margin-bottom: 15px;
+}
+
+.event-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.event-icon {
+  font-size: 1.1rem;
+}
+
+.event-description {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  flex-grow: 1;
+}
+
+.btn-event-details {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  width: 100%;
+}
+
+.btn-event-details:hover {
+  transform: scale(1.05);
+}
+
+/* Category List Styles */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.category-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.category-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.category-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #1a1a1a;
+}
+
+.category-item p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Subscribe Form Styles */
+.subscribe-form {
+  margin-top: 20px;
+}
+
+.subscribe-form .form-control,
+.subscribe-form .form-select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+.subscribe-form .form-select[multiple] {
+  height: auto;
+}
+
+/* Responsive Design for Events */
 @media (max-width: 768px) {
-  .hero-section h1 {
-    font-size: 2.2rem;
+  .event-card {
+    height: auto;
   }
-  
-  .hero-section p {
-    font-size: 1.1rem;
+
+  .event-date {
+    width: 60px;
+    height: 60px;
   }
-  
-  .hero-buttons {
-    justify-content: center;
-  }
-  
-  .service-cards-section,
-  .service-impact-section,
-  .emergency-section,
-  .updates-section {
-    padding: 30px 15px;
-  }
-  
-  .impact-card,
-  .emergency-card,
-  .updates-card {
-    padding: 30px 20px;
-  }
-  
-  .impact-number {
-    font-size: 2rem;
-  }
-  
-  .emergency-number {
+
+  .event-day {
     font-size: 1.5rem;
   }
 
-  .page-title {
-    font-size: 2rem;
+  .event-month {
+    font-size: 0.8rem;
   }
 
-  .info-cards-row {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .form-card {
-    padding: 25px;
-  }
-
-  .info-card {
-    padding: 25px;
-  }
-
-  .process-card {
-    padding: 25px;
+  .event-title {
+    font-size: 1.1rem;
   }
 }
 
 @media (max-width: 576px) {
-  .hero-section {
-    padding: 60px 0;
+  .event-card {
+    padding: 15px;
   }
-  
-  .hero-section h1 {
-    font-size: 1.8rem;
+
+  .event-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 10px;
   }
-  
-  .btn-hero {
-    width: 100%;
+
+  .category-item {
+    flex-direction: column;
     text-align: center;
   }
-  
-  .service-card {
-    height: auto;
-    padding: 25px;
-  }
 
-  .page-title {
-    font-size: 1.8rem;
-  }
-
-  .report-header {
-    padding: 30px 15px;
-  }
-
-  .form-card {
-    padding: 20px;
-  }
-
-  .info-card {
-    padding: 20px;
-  }
-
-  .process-card {
-    padding: 20px;
+  .category-icon {
+    margin: 0 auto;
   }
 }
