@@ -60,61 +60,66 @@
             
             @if (Model != null && Model.Any())
             {
-                <p class="subtitle">📊 Displaying @Model.Count() events from Dictionary-based repository</p>
+                <p class="subtitle">📊 Displaying @Model.Count() events from Dictionary-based repository | <span id="visibleEventsCount">@Math.Min(Model.Count(), 17)</span> visible</p>
             }
             
-            <div class="row g-4" id="featuredEvents">
-                
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var evt in Model)
+            <!-- Scrollable Events Container -->
+            <div class="events-scroll-container">
+                <div class="row g-4" id="featuredEvents">
+                    
+                    @if (Model != null && Model.Any())
                     {
-                        var categoryClass = evt.Category.ToLower() switch
+                        foreach (var evt in Model)
                         {
-                            "community" => "event-badge-community",
-                            "arts" => "event-badge-arts",
-                            "municipal" => "event-badge-municipal",
-                            "sports" => "event-badge-sports",
-                            "health" => "event-badge-health",
-                            "environment" => "event-badge-environment",
-                            _ => "event-badge-community"
-                        };
-                        
-                        <div class="col-md-6 col-lg-4">
-                            <div class="event-card" data-category="@evt.Category" data-date="@evt.EventDate.ToString("yyyy-MM-dd")" data-event-id="@evt.Id">
-                                <div class="event-badge @categoryClass">@evt.Category</div>
-                                <div class="event-date">
-                                    <div class="event-day">@evt.EventDate.Day</div>
-                                    <div class="event-month">@evt.EventDate.ToString("MMM").ToUpper()</div>
-                                </div>
-                                <h4 class="event-title">@evt.Title</h4>
-                                <div class="event-details">
-                                    <div class="event-detail-item">
-                                        <span class="event-icon">🕐</span>
-                                        <span>@evt.EventDate.ToString("h:mm tt")</span>
+                            var categoryClass = evt.Category.ToLower() switch
+                            {
+                                "community" => "event-badge-community",
+                                "arts" => "event-badge-arts",
+                                "municipal" => "event-badge-municipal",
+                                "sports" => "event-badge-sports",
+                                "health" => "event-badge-health",
+                                "environment" => "event-badge-environment",
+                                "education" => "event-badge-education",
+                                "safety" => "event-badge-safety",
+                                _ => "event-badge-community"
+                            };
+                            
+                            <div class="col-md-6 col-lg-4">
+                                <div class="event-card" data-category="@evt.Category" data-date="@evt.EventDate.ToString("yyyy-MM-dd")" data-event-id="@evt.Id">
+                                    <div class="event-badge @categoryClass">@evt.Category</div>
+                                    <div class="event-date">
+                                        <div class="event-day">@evt.EventDate.Day</div>
+                                        <div class="event-month">@evt.EventDate.ToString("MMM").ToUpper()</div>
                                     </div>
-                                    <div class="event-detail-item">
-                                        <span class="event-icon">📍</span>
-                                        <span>@evt.Location</span>
+                                    <h4 class="event-title">@evt.Title</h4>
+                                    <div class="event-details">
+                                        <div class="event-detail-item">
+                                            <span class="event-icon">🕐</span>
+                                            <span>@evt.EventDate.ToString("h:mm tt")</span>
+                                        </div>
+                                        <div class="event-detail-item">
+                                            <span class="event-icon">📍</span>
+                                            <span>@evt.Location</span>
+                                        </div>
                                     </div>
+                                    <p class="event-description">@evt.Description</p>
+                                    <button class="btn-event-details" data-event-id="@evt.Id">View Details</button>
                                 </div>
-                                <p class="event-description">@evt.Description</p>
-                                <button class="btn-event-details" data-event-id="@evt.Id">View Details</button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div style="text-align: center; padding: 40px; color: #666;">
+                                <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
+                                <h4>No Events Available</h4>
+                                <p>Dictionary is empty. Events will be seeded on next page load.</p>
                             </div>
                         </div>
                     }
-                }
-                else
-                {
-                    <div class="col-12">
-                        <div style="text-align: center; padding: 40px; color: #666;">
-                            <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
-                            <h4>No Events Available</h4>
-                            <p>Dictionary is empty. Events will be seeded on next page load.</p>
-                        </div>
-                    </div>
-                }
 
+                </div>
             </div>
 
             <!-- No Results Message -->
@@ -122,6 +127,11 @@
                 <div style="font-size: 3rem; margin-bottom: 20px;">📅</div>
                 <h4>No Events Found</h4>
                 <p>Try adjusting your search criteria or filters.</p>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="scroll-indicator" id="scrollIndicator">
+                <span>⬇️ Scroll down to see more events ⬇️</span>
             </div>
         </div>
 
@@ -220,6 +230,36 @@ else
         const dateFilter = document.getElementById('dateFilter');
         const eventCards = document.querySelectorAll('.event-card');
         const noResults = document.getElementById('noResults');
+        const scrollContainer = document.querySelector('.events-scroll-container');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        const visibleEventsCount = document.getElementById('visibleEventsCount');
+
+        // Function to update visible events count
+        function updateVisibleCount() {
+            const visibleCards = Array.from(eventCards).filter(card => 
+                card.parentElement.style.display !== 'none'
+            );
+            if (visibleEventsCount) {
+                visibleEventsCount.textContent = visibleCards.length;
+            }
+        }
+
+        // Hide scroll indicator when scrolled to bottom
+        if (scrollContainer && scrollIndicator) {
+            scrollContainer.addEventListener('scroll', function() {
+                const isAtBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop <= scrollContainer.clientHeight + 50;
+                if (isAtBottom) {
+                    scrollIndicator.classList.add('hidden');
+                } else {
+                    scrollIndicator.classList.remove('hidden');
+                }
+            });
+
+            // Check if scrollable on load
+            if (scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
+                scrollIndicator.classList.add('hidden');
+            }
+        }
 
         function filterEvents() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -266,7 +306,25 @@ else
             });
 
             // Show "no results" message if no cards are visible
-            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            const hasVisibleCards = visibleCount > 0;
+            noResults.style.display = hasVisibleCards ? 'none' : 'block';
+            
+            // Update visible count
+            updateVisibleCount();
+
+            // Check if scroll indicator should be shown
+            if (scrollContainer && scrollIndicator) {
+                if (hasVisibleCards && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
+                    scrollIndicator.classList.remove('hidden');
+                } else {
+                    scrollIndicator.classList.add('hidden');
+                }
+            }
+
+            // Reset scroll position when filtering
+            if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+            }
         }
 
         // Add event listeners
@@ -282,6 +340,9 @@ else
                 alert(`Event details for: ${eventTitle}\n\nMore details coming soon!`);
             });
         });
+
+        // Initial count update
+        updateVisibleCount();
     });
 </script>
 
