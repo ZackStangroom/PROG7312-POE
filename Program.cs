@@ -15,6 +15,7 @@ namespace PROG7312_POE
             // Register custom services - register by interface
             builder.Services.AddSingleton<IIssueReportRepository, IssueReportRepository>();
             builder.Services.AddScoped<IIssueReportService, IssueReportService>();
+            builder.Services.AddSingleton<IEventRepository, EventRepository>();
 
             var app = builder.Build();
 

@@ -9,11 +9,13 @@ namespace PROG7312_POE.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IIssueReportService _issueReportService;
+        private readonly IEventRepository _eventRepository;
 
-        public HomeController(ILogger<HomeController> logger, IIssueReportService issueReportService)
+        public HomeController(ILogger<HomeController> logger, IIssueReportService issueReportService, IEventRepository eventRepository)
         {
             _logger = logger;
             _issueReportService = issueReportService;
+            _eventRepository = eventRepository;
         }
 
         public IActionResult Index()
@@ -76,7 +78,83 @@ namespace PROG7312_POE.Controllers
         // GET: Home/LocalEvents
         public IActionResult LocalEvents()
         {
-            return View();
+            // Check if dictionary is empty and seed it
+            if (_eventRepository.GetTotalCount() == 0)
+            {
+                SeedEventsIntoDictionary();
+            }
+            
+            // Get events from dictionary and pass to view
+            var events = _eventRepository.GetUpcoming().ToList();
+            return View(events);
+        }
+
+        private void SeedEventsIntoDictionary()
+        {
+            var sampleEvents = new List<LocalEvent>
+            {
+                new LocalEvent
+                {
+                    Title = "Cape Town Community Clean-Up",
+                    Description = "Join us for a community beach clean-up event. Help keep our beaches beautiful!",
+                    EventDate = new DateTime(2025, 10, 18, 9, 0, 0),
+                    Category = "Community",
+                    Location = "Sea Point Promenade",
+                    Status = EventStatus.Upcoming
+                },
+                new LocalEvent
+                {
+                    Title = "Local Arts & Crafts Market",
+                    Description = "Discover local artisans and craftspeople showcasing their work.",
+                    EventDate = new DateTime(2025, 10, 22, 10, 0, 0),
+                    Category = "Arts",
+                    Location = "Green Point Park",
+                    Status = EventStatus.Upcoming
+                },
+                new LocalEvent
+                {
+                    Title = "City Council Public Meeting",
+                    Description = "Public consultation on upcoming infrastructure projects.",
+                    EventDate = new DateTime(2025, 10, 25, 18, 0, 0),
+                    Category = "Municipal",
+                    Location = "Cape Town Civic Centre",
+                    Status = EventStatus.Upcoming
+                },
+                new LocalEvent
+                {
+                    Title = "Cape Town Marathon",
+                    Description = "Annual city marathon featuring 10K, 21K, and 42K routes.",
+                    EventDate = new DateTime(2025, 10, 28, 6, 0, 0),
+                    Category = "Sports",
+                    Location = "City Centre",
+                    Status = EventStatus.Upcoming
+                },
+                new LocalEvent
+                {
+                    Title = "Free Health Screening Day",
+                    Description = "Free health screenings including blood pressure, diabetes, and cholesterol.",
+                    EventDate = new DateTime(2025, 11, 2, 8, 0, 0),
+                    Category = "Health",
+                    Location = "Khayelitsha Community Centre",
+                    Status = EventStatus.Upcoming
+                },
+                new LocalEvent
+                {
+                    Title = "Tree Planting Initiative",
+                    Description = "Help us plant 500 trees to combat climate change and beautify our city.",
+                    EventDate = new DateTime(2025, 11, 5, 9, 0, 0),
+                    Category = "Environment",
+                    Location = "Newlands Forest",
+                    Status = EventStatus.Upcoming
+                }
+            };
+
+            foreach (var evt in sampleEvents)
+            {
+                _eventRepository.Add(evt);
+            }
+            
+            _logger.LogInformation($"Seeded {sampleEvents.Count} events into dictionary");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
