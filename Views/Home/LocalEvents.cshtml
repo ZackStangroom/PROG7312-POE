@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<PROG7312_POE.Models.LocalEvent>
+@inject PROG7312_POE.Services.Interfaces.IEventRepository EventRepository
 
 @{
     ViewData["Title"] = "Local Events";
+    var categoryCounts = EventRepository.GetCategoryCounts();
+    var uniqueCategories = EventRepository.GetUniqueCategories();
+    var dateCounts = EventRepository.GetDateCounts();
 }
 
 <!-- Page Header -->
@@ -20,7 +24,7 @@
         <!-- Search and Filter Section -->
         <div class="form-card">
             <h3>Find Events</h3>
-            <p class="subtitle">Search for events by category, date, or location.</p>
+            <p class="subtitle">Search for events by category, date, or location using hashtable-optimized filtering.</p>
             
             <div class="row g-3">
                 <div class="col-md-4">
@@ -28,21 +32,18 @@
                     <input type="text" class="form-control" id="searchInput" placeholder="Search events...">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">📂 Category</label>
+                    <label class="form-label">📂 Category <small class="text-muted">(@categoryCounts.Count unique)</small></label>
                     <select class="form-select" id="categoryFilter">
-                        <option value="">All Categories</option>
-                        <option value="Community">Community</option>
-                        <option value="Sports">Sports & Recreation</option>
-                        <option value="Arts">Arts & Culture</option>
-                        <option value="Education">Education</option>
-                        <option value="Health">Health & Wellness</option>
-                        <option value="Environment">Environment</option>
-                        <option value="Municipal">Municipal Meetings</option>
-                        <option value="Safety">Public Safety</option>
+                        <option value="">All Categories (@(Model?.Count() ?? 0) events)</option>
+                        @foreach (var category in uniqueCategories)
+                        {
+                            var count = categoryCounts[category];
+                            <option value="@category">@category (@count event@(count != 1 ? "s" : ""))</option>
+                        }
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">📅 Date Range</label>
+                    <label class="form-label">📅 Date Range <small class="text-muted">(@dateCounts.Count unique dates)</small></label>
                     <select class="form-select" id="dateFilter">
                         <option value="">All Dates</option>
                         <option value="today">Today</option>
@@ -73,7 +74,11 @@
             
             @if (Model != null && Model.Any())
             {
-                <p class="subtitle">📊 Displaying @Model.Count() events from Dictionary-based repository | <span id="visibleEventsCount">@Math.Min(Model.Count(), 17)</span> visible</p>
+                <p class="subtitle">
+                    📊 Displaying @Model.Count() events | 
+                    <span id="visibleEventsCount">@Model.Count()</span> visible | 
+                    ⚡ Hashtable: @categoryCounts.Count categories, @dateCounts.Count dates
+                </p>
             }
             
             <!-- Scrollable Events Container -->
@@ -97,6 +102,8 @@
                                 _ => "event-badge-community"
                             };
                             
+                            var eventCount = EventRepository.GetDateCount(evt.EventDate);
+                            
                             <div class="col-md-6 col-lg-4">
                                 <div class="event-card" 
                                      data-category="@evt.Category" 
@@ -109,6 +116,12 @@
                                      data-event-status="@evt.Status"
                                      data-event-created="@evt.CreatedAt.ToString("MMM dd, yyyy")">
                                     <div class="event-badge @categoryClass">@evt.Category</div>
+                                    @if (eventCount > 1)
+                                    {
+                                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem;">
+                                            @eventCount events today
+                                        </div>
+                                    }
                                     <div class="event-date">
                                         <div class="event-day">@evt.EventDate.Day</div>
                                         <div class="event-month">@evt.EventDate.ToString("MMM").ToUpper()</div>
@@ -159,39 +172,34 @@
 
         <!-- Information Cards Row -->
         <div class="info-cards-row">
-            <!-- Event Categories Card -->
+            <!-- Event Categories Card with Hashtable Stats -->
             <div class="process-card">
-                <h3>Event Categories</h3>
+                <h3>Event Categories <span style="font-size: 0.8rem; color: #999;">⚡ Hashtable-Optimized</span></h3>
                 
                 <div class="category-list">
-                    <div class="category-item">
-                        <span class="category-icon">👥</span>
-                        <div>
-                            <strong>Community Events</strong>
-                            <p>Neighborhood meetings, clean-ups, and social gatherings</p>
+                    @foreach (var categoryCount in categoryCounts.OrderByDescending(c => c.Value).Take(8))
+                    {
+                        var icon = categoryCount.Key.ToLower() switch
+                        {
+                            "community" => "👥",
+                            "arts" or "arts & culture" => "🎨",
+                            "sports" or "sports & recreation" => "🏃",
+                            "municipal" or "municipal meetings" => "🏛️",
+                            "health" or "health & wellness" => "💊",
+                            "environment" => "🌳",
+                            "education" => "📚",
+                            "safety" or "public safety" => "🚨",
+                            _ => "📌"
+                        };
+                        
+                        <div class="category-item" style="cursor: pointer;" onclick="filterByCategory('@categoryCount.Key')">
+                            <span class="category-icon">@icon</span>
+                            <div>
+                                <strong>@categoryCount.Key</strong>
+                                <p>@categoryCount.Value event@(categoryCount.Value != 1 ? "s" : "") available</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="category-item">
-                        <span class="category-icon">🎨</span>
-                        <div>
-                            <strong>Arts & Culture</strong>
-                            <p>Markets, exhibitions, performances, and festivals</p>
-                        </div>
-                    </div>
-                    <div class="category-item">
-                        <span class="category-icon">🏃</span>
-                        <div>
-                            <strong>Sports & Recreation</strong>
-                            <p>Marathons, tournaments, and fitness activities</p>
-                        </div>
-                    </div>
-                    <div class="category-item">
-                        <span class="category-icon">🏛️</span>
-                        <div>
-                            <strong>Municipal Meetings</strong>
-                            <p>Public consultations and council meetings</p>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
 
@@ -294,22 +302,23 @@
     </div>
 </div>
 
-<!-- Dictionary Debug Info (remove in production) -->
+<!-- Hashtable Debug Info -->
 @if (Model != null)
 {
     <div class="alert alert-success" role="alert">
-        <strong>✅ Dictionary Active!</strong><br/>
+        <strong>✅ Hashtable & Dictionary Active!</strong><br/>
         <small>
-            - Total events in model: @Model.Count()<br/>
-            - Events are stored in: Dictionary&lt;string, LocalEvent&gt;, SortedDictionary&lt;DateTime, List&lt;LocalEvent&gt;&gt;<br/>
-            - Categories: @string.Join(", ", Model.Select(e => e.Category).Distinct())
+            - Total events: @Model.Count()<br/>
+            - Storage: Dictionary&lt;string, LocalEvent&gt;, SortedDictionary&lt;DateTime, List&lt;LocalEvent&gt;&gt;<br/>
+            - ⚡ Hashtable: @categoryCounts.Count unique categories, @dateCounts.Count unique dates (O(1) lookup)<br/>
+            - Categories: @string.Join(", ", categoryCounts.Select(c => $"{c.Key} ({c.Value})"))
         </small>
     </div>
 }
 else
 {
     <div class="alert alert-danger" role="alert">
-        <strong>❌ Dictionary NOT working!</strong> Model is null.
+        <strong>❌ Data structures NOT working!</strong> Model is null.
     </div>
 }
 
@@ -323,6 +332,34 @@ else
         const scrollContainer = document.querySelector('.events-scroll-container');
         const scrollIndicator = document.getElementById('scrollIndicator');
         const visibleEventsCount = document.getElementById('visibleEventsCount');
+        
+        // Create hashtable-like structure in JavaScript for efficient client-side filtering
+        const categoryHashtable = {};
+        const dateHashtable = {};
+        
+        // Populate hashtables from event cards
+        eventCards.forEach(card => {
+            const category = card.dataset.category;
+            const date = card.dataset.date;
+            
+            // Category hashtable
+            if (!categoryHashtable[category]) {
+                categoryHashtable[category] = [];
+            }
+            categoryHashtable[category].push(card);
+            
+            // Date hashtable
+            if (!dateHashtable[date]) {
+                dateHashtable[date] = [];
+            }
+            dateHashtable[date].push(card);
+        });
+        
+        console.log('📊 Hashtables initialized:', {
+            categories: Object.keys(categoryHashtable).length,
+            dates: Object.keys(dateHashtable).length,
+            categoryDetails: Object.fromEntries(Object.entries(categoryHashtable).map(([k, v]) => [k, v.length]))
+        });
         
         // Modal elements
         const modalOverlay = document.getElementById('eventModalOverlay');
@@ -343,25 +380,21 @@ else
         class EventStack {
             constructor() {
                 this.items = [];
-                this.maxSize = 20; // Limit stack size to prevent memory issues
+                this.maxSize = 20;
             }
-            
             // Push event to stack
             push(eventData) {
-                // Remove duplicate if exists (to avoid same event multiple times in a row)
+                // Avoid duplicates - if event already at top, do nothing
                 const existingIndex = this.items.findIndex(item => item.id === eventData.id);
                 if (existingIndex === 0) {
-                    // If it's already at the top, don't add again
                     return;
                 }
                 if (existingIndex > 0) {
-                    // Remove from middle/bottom
+                    // Remove existing instance
                     this.items.splice(existingIndex, 1);
                 }
-                
-                // Add to top of stack
+                // Add to top
                 this.items.unshift(eventData);
-                
                 // Maintain max size
                 if (this.items.length > this.maxSize) {
                     this.items.pop();
@@ -369,8 +402,7 @@ else
                 
                 this.saveToLocalStorage();
             }
-            
-            // Pop event from stack (remove and return top item)
+            // Pop event from stack - removes the top item
             pop() {
                 if (this.items.length > 0) {
                     const item = this.items.shift();
@@ -379,39 +411,32 @@ else
                 }
                 return null;
             }
-            
-            // Peek at top item without removing
+            // Peek at top without removing
             peek() {
                 return this.items.length > 0 ? this.items[0] : null;
             }
-            
-            // Get all items (for display purposes)
+            // Gets akk items
             getAll() {
                 return [...this.items];
             }
-            
             // Check if stack is empty
             isEmpty() {
                 return this.items.length === 0;
             }
-            
-            // Get stack size
+            // Get current size
             size() {
                 return this.items.length;
             }
-            
             // Clear stack
             clear() {
                 this.items = [];
                 this.saveToLocalStorage();
             }
-            
-            // Save to localStorage
+            // Save to localstorage
             saveToLocalStorage() {
                 localStorage.setItem('eventViewHistory', JSON.stringify(this.items));
             }
-            
-            // Load from localStorage
+            // Load from localstorage
             loadFromLocalStorage() {
                 const stored = localStorage.getItem('eventViewHistory');
                 if (stored) {
@@ -478,52 +503,61 @@ else
             const selectedDate = dateFilter.value;
             let visibleCount = 0;
 
-            eventCards.forEach(card => {
-                const title = card.querySelector('.event-title').textContent.toLowerCase();
-                const description = card.querySelector('.event-description').textContent.toLowerCase();
-                const category = card.dataset.category;
-                const eventDate = new Date(card.dataset.date);
-                const today = new Date();
-
-                // Search filter
-                const matchesSearch = searchTerm === '' || 
-                    title.includes(searchTerm) || 
-                    description.includes(searchTerm);
-
-                // Category filter
-                const matchesCategory = selectedCategory === '' || category === selectedCategory;
-
-                // Date filter
-                let matchesDate = true;
-                if (selectedDate === 'today') {
-                    matchesDate = eventDate.toDateString() === today.toDateString();
-                } else if (selectedDate === 'week') {
-                    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-                    matchesDate = eventDate >= today && eventDate <= weekFromNow;
-                } else if (selectedDate === 'month') {
-                    const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-                    matchesDate = eventDate >= today && eventDate <= monthFromNow;
-                } else if (selectedDate === 'upcoming') {
-                    matchesDate = eventDate >= today;
-                }
-
-                // Show or hide card
-                if (matchesSearch && matchesCategory && matchesDate) {
-                    card.parentElement.style.display = 'block';
-                    visibleCount++;
-                } else {
+            // Use hashtable for efficient category filtering
+            if (selectedCategory && !searchTerm && !selectedDate) {
+                // O(1) hashtable lookup for category
+                eventCards.forEach(card => {
                     card.parentElement.style.display = 'none';
+                });
+                
+                if (categoryHashtable[selectedCategory]) {
+                    categoryHashtable[selectedCategory].forEach(card => {
+                        card.parentElement.style.display = 'block';
+                        visibleCount++;
+                    });
                 }
-            });
+            } else {
+                // Regular filtering for combined filters
+                eventCards.forEach(card => {
+                    const title = card.querySelector('.event-title').textContent.toLowerCase();
+                    const description = card.querySelector('.event-description').textContent.toLowerCase();
+                    const category = card.dataset.category;
+                    const eventDate = new Date(card.dataset.date);
+                    const today = new Date();
 
-            // Show "no results" message if no cards are visible
+                    const matchesSearch = searchTerm === '' || 
+                        title.includes(searchTerm) || 
+                        description.includes(searchTerm);
+                    
+                    const matchesCategory = selectedCategory === '' || category === selectedCategory;
+
+                    let matchesDate = true;
+                    if (selectedDate === 'today') {
+                        matchesDate = eventDate.toDateString() === today.toDateString();
+                    } else if (selectedDate === 'week') {
+                        const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                        matchesDate = eventDate >= today && eventDate <= weekFromNow;
+                    } else if (selectedDate === 'month') {
+                        const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                        matchesDate = eventDate >= today && eventDate <= monthFromNow;
+                    } else if (selectedDate === 'upcoming') {
+                        matchesDate = eventDate >= today;
+                    }
+
+                    if (matchesSearch && matchesCategory && matchesDate) {
+                        card.parentElement.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.parentElement.style.display = 'none';
+                    }
+                });
+            }
+
             const hasVisibleCards = visibleCount > 0;
             noResults.style.display = hasVisibleCards ? 'none' : 'block';
             
-            // Update visible count
             updateVisibleCount();
 
-            // Check if scroll indicator should be shown
             if (scrollContainer && scrollIndicator) {
                 if (hasVisibleCards && scrollContainer.scrollHeight > scrollContainer.clientHeight) {
                     scrollIndicator.classList.remove('hidden');
@@ -627,7 +661,13 @@ else
             document.body.style.overflow = 'auto';
         }
 
-        // Add event listeners
+        // Global function for category filtering from HTML
+        window.filterByCategory = function(category) {
+            categoryFilter.value = category;
+            filterEvents();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
         searchInput.addEventListener('input', filterEvents);
         categoryFilter.addEventListener('change', filterEvents);
         dateFilter.addEventListener('change', filterEvents);

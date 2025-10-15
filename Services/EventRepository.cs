@@ -1,5 +1,6 @@
 using PROG7312_POE.Models;
 using PROG7312_POE.Services.Interfaces;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace PROG7312_POE.Services
@@ -15,11 +16,19 @@ namespace PROG7312_POE.Services
         // Dictionary for grouping by category
         private readonly Dictionary<string, List<LocalEvent>> _eventsByCategory;
 
+        // Hashtable for unique categories with event counts (O(1) lookup)
+        private readonly Hashtable _categoryHashtable;
+        
+        // Hashtable for unique dates with event counts (O(1) lookup)
+        private readonly Hashtable _dateHashtable;
+
         public EventRepository()
         {
             _eventsByDate = new SortedDictionary<DateTime, List<LocalEvent>>();
             _eventsById = new Dictionary<string, LocalEvent>();
             _eventsByCategory = new Dictionary<string, List<LocalEvent>>(StringComparer.OrdinalIgnoreCase);
+            _categoryHashtable = new Hashtable(StringComparer.OrdinalIgnoreCase);
+            _dateHashtable = new Hashtable();
         }
 
         public void Add(LocalEvent localEvent)
@@ -44,6 +53,27 @@ namespace PROG7312_POE.Services
                 _eventsByCategory[localEvent.Category] = new List<LocalEvent>();
             }
             _eventsByCategory[localEvent.Category].Add(localEvent);
+
+            // Update category hashtable (category -> count)
+            if (_categoryHashtable.ContainsKey(localEvent.Category))
+            {
+                _categoryHashtable[localEvent.Category] = (int)_categoryHashtable[localEvent.Category]! + 1;
+            }
+            else
+            {
+                _categoryHashtable[localEvent.Category] = 1;
+            }
+
+            // Update date hashtable (date -> count)
+            string dateString = dateKey.ToString("yyyy-MM-dd");
+            if (_dateHashtable.ContainsKey(dateString))
+            {
+                _dateHashtable[dateString] = (int)_dateHashtable[dateString]! + 1;
+            }
+            else
+            {
+                _dateHashtable[dateString] = 1;
+            }
         }
 
         public LocalEvent? GetById(string id)
@@ -118,6 +148,35 @@ namespace PROG7312_POE.Services
                 }
             }
 
+            // Update category hashtable
+            if (_categoryHashtable.ContainsKey(localEvent.Category))
+            {
+                int count = (int)_categoryHashtable[localEvent.Category]!;
+                if (count <= 1)
+                {
+                    _categoryHashtable.Remove(localEvent.Category);
+                }
+                else
+                {
+                    _categoryHashtable[localEvent.Category] = count - 1;
+                }
+            }
+
+            // Update date hashtable
+            string dateString = dateKey.ToString("yyyy-MM-dd");
+            if (_dateHashtable.ContainsKey(dateString))
+            {
+                int count = (int)_dateHashtable[dateString]!;
+                if (count <= 1)
+                {
+                    _dateHashtable.Remove(dateString);
+                }
+                else
+                {
+                    _dateHashtable[dateString] = count - 1;
+                }
+            }
+
             return true;
         }
 
@@ -126,11 +185,115 @@ namespace PROG7312_POE.Services
             _eventsByDate.Clear();
             _eventsById.Clear();
             _eventsByCategory.Clear();
+            _categoryHashtable.Clear();
+            _dateHashtable.Clear();
         }
 
         public int GetTotalCount()
         {
             return _eventsById.Count;
+        }
+
+        // New methods for hashtable access
+
+        /// <summary>
+        /// Gets all unique categories using hashtable for O(1) lookup
+        /// </summary>
+        public IEnumerable<string> GetUniqueCategories()
+        {
+            return _categoryHashtable.Keys.Cast<string>().OrderBy(c => c);
+        }
+
+        /// <summary>
+        /// Gets the event count for a specific category using hashtable (O(1))
+        /// </summary>
+        public int GetCategoryCount(string category)
+        {
+            return _categoryHashtable.ContainsKey(category) 
+                ? (int)_categoryHashtable[category]! 
+                : 0;
+        }
+
+        /// <summary>
+        /// Gets all categories with their counts as a dictionary
+        /// </summary>
+        public Dictionary<string, int> GetCategoryCounts()
+        {
+            var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (DictionaryEntry entry in _categoryHashtable)
+            {
+                result[(string)entry.Key] = (int)entry.Value!;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Gets all unique dates using hashtable
+        /// </summary>
+        public IEnumerable<DateTime> GetUniqueDates()
+        {
+            return _dateHashtable.Keys
+                .Cast<string>()
+                .Select(d => DateTime.Parse(d))
+                .OrderBy(d => d);
+        }
+
+        /// <summary>
+        /// Gets the event count for a specific date using hashtable (O(1))
+        /// </summary>
+        public int GetDateCount(DateTime date)
+        {
+            string dateString = date.Date.ToString("yyyy-MM-dd");
+            return _dateHashtable.ContainsKey(dateString) 
+                ? (int)_dateHashtable[dateString]! 
+                : 0;
+        }
+
+        /// <summary>
+        /// Gets all dates with their counts as a dictionary
+        /// </summary>
+        public Dictionary<DateTime, int> GetDateCounts()
+        {
+            var result = new Dictionary<DateTime, int>();
+            foreach (DictionaryEntry entry in _dateHashtable)
+            {
+                DateTime date = DateTime.Parse((string)entry.Key);
+                result[date] = (int)entry.Value!;
+            }
+            return result.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        /// <summary>
+        /// Checks if a category exists in hashtable (O(1))
+        /// </summary>
+        public bool CategoryExists(string category)
+        {
+            return _categoryHashtable.ContainsKey(category);
+        }
+
+        /// <summary>
+        /// Checks if events exist on a specific date (O(1))
+        /// </summary>
+        public bool HasEventsOnDate(DateTime date)
+        {
+            string dateString = date.Date.ToString("yyyy-MM-dd");
+            return _dateHashtable.ContainsKey(dateString);
+        }
+
+        /// <summary>
+        /// Gets total number of unique categories
+        /// </summary>
+        public int GetUniqueCategoryCount()
+        {
+            return _categoryHashtable.Count;
+        }
+
+        /// <summary>
+        /// Gets total number of unique dates
+        /// </summary>
+        public int GetUniqueDateCount()
+        {
+            return _dateHashtable.Count;
         }
     }
 }
