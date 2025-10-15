@@ -11,6 +11,7 @@ A comprehensive municipal services application built with ASP.NET Core MVC (.NET
 - [Running the Application](#running-the-application)
 - [How to Use the Application](#how-to-use-the-application)
 - [Data Structures Implementation](#data-structures-implementation)
+- [Algorithms & Pattern Recognition](#algorithms--pattern-recognition)
 - [Video Link](#video-link)
 
 ## Features
@@ -18,8 +19,10 @@ A comprehensive municipal services application built with ASP.NET Core MVC (.NET
 ### 🎯 Core Functionality
 - **Issue Reporting**: Citizens can report municipal issues with detailed descriptions, locations, and media attachments
 - **Service Request Tracking**: View and track the status of reported issues
-- **Local Events & Announcements**: Browse community events and municipal announcements
+- **Local Events & Announcements**: Browse community events and municipal announcements with 17+ seeded events
+- **Intelligent Event Recommendations**: AI-powered event suggestions based on your search patterns
 - **Real-time Progress Tracking**: Visual progress indicators for form completion and submission
+- **Search Pattern Analysis**: View your search habits and preferences with detailed analytics
 
 ### 📋 Issue Management
 - Multiple issue categories (Water & Sanitation, Roads & Transport, Electricity, etc.)
@@ -28,19 +31,31 @@ A comprehensive municipal services application built with ASP.NET Core MVC (.NET
 - File upload support for images, videos, and documents
 - Location-based issue reporting
 
+### 🎉 Local Events & Announcements
+- **17 Pre-seeded Events**: Diverse community events across Cape Town
+- **Event Categories**: Community, Arts, Sports, Municipal, Health, Environment, Education, Safety
+- **Smart Filtering**: Filter by category, date range, or search keywords
+- **Event Details Modal**: View comprehensive event information
+- **Viewing History**: Track events you've viewed with Stack-based history (LIFO)
+- **Event Recommendations**: Get personalized event suggestions based on your interests
+
 ## Technical Architecture
 
 ### Technology Stack
-- **Framework**: ASP.NET Core MVC 8.0
+- **Framework**: ASP.NET Core Razor Pages 8.0
 - **Language**: C# 12.0
 - **Target Framework**: .NET 8
 - **Frontend**: Razor Views with HTML5, CSS3, JavaScript
-- **Data Storage**: In-memory collections using custom LinkedList implementation
+- **Data Storage**: In-memory collections using multiple advanced data structures
 - **File Handling**: IFormFile for media uploads
 - **Dependency Injection**: Built-in ASP.NET Core DI container
+- **Pattern Recognition**: Custom search pattern tracking and recommendation algorithm
 
-### Custom Data Structures
-The application implements a **Custom LinkedList** data structure for efficient issue management, providing O(1) insertion and flexible traversal capabilities.
+### Architecture Highlights
+- **Repository Pattern**: Clean separation of data access logic
+- **Service Layer**: Business logic encapsulated in services
+- **Dependency Injection**: Loose coupling and testability
+- **RESTful API**: `/api/SearchPattern` endpoints for pattern tracking
 
 ## Prerequisites
 
@@ -48,12 +63,12 @@ Before running this application, ensure you have the following installed:
 
 ### Required Software
 - **Visual Studio 2022** (Version 17.8 or later) with ASP.NET and web development workload
+- **.NET 8 SDK** (included with Visual Studio 2022)
 - **IIS Express** (included with Visual Studio)
 
 ### Alternative IDEs
 - **Visual Studio Code** with C# extension
 - **JetBrains Rider** 2023.3 or later
-
 
 ## Installation & Setup
 
@@ -69,6 +84,12 @@ https://github.com/ST10372065/PROG7312-POE.git
 3. Ensure build succeeds without errors
 4. Check Output window for any warnings
 
+### Using .NET CLI
+1. Open a command prompt or terminal
+2. Navigate to the project directory
+3. Run `dotnet build` to compile the project
+4. Ensure there are no compilation errors
+
 ## Running the Application
 
 ### Method 1: Visual Studio (Recommended)
@@ -82,7 +103,7 @@ https://github.com/ST10372065/PROG7312-POE.git
 
 ### 🏠 Home Page
 - **Navigation**: Use the main menu to access different features
-- **Quick Actions**: Direct links to report issues and view services
+- **Quick Actions**: Direct links to report issues, view events, and track service requests
 - **Information Cards**: Community information and announcements
 
 ### 📝 Reporting Issues
@@ -127,6 +148,77 @@ https://github.com/ST10372065/PROG7312-POE.git
    - Instant feedback: "Report Submitted! Thank you for helping our community."
    - Option to submit additional reports
 
+
+### 🎉 Local Events & Announcements
+
+#### Browsing Events:
+1. **Navigate to Local Events**
+   - Click "Local Events" from the main menu
+   - View all upcoming community events
+
+2. **Search & Filter Events**
+   - **Search Bar**: Type keywords to find specific events
+   - **Category Filter**: Filter by event category (Community, Arts, Sports, etc.)
+   - **Date Range Filter**: Choose from Today, This Week, This Month, or Upcoming
+   - **Smart Filtering**: Uses hashtable-optimized O(1) lookups for instant results
+
+3. **View Event Details**
+   - Click "View Details" on any event card
+   - Modal displays comprehensive event information
+   - Events automatically tracked in your viewing history
+
+4. **Viewing History (Stack-Based)**
+   - **View History Button**: See all events you've viewed (Stack: LIFO - most recent first)
+   - **Previous Event Button**: Pop the stack to go back to previously viewed events
+   - **Clear History**: Reset your viewing history
+   - **Persistent Storage**: History saved in browser localStorage
+
+5. **Personalized Recommendations**
+   - **"Recommended For You" Section**: AI-powered suggestions based on your search patterns
+   - **View My Patterns**: Analyze your search behavior with detailed statistics
+   - **Recommendation Reasons**: See why events are recommended to you
+   - **Perfect Match Indicators**: Events matching multiple preferences get bonus scores
+
+
+### 📊 Progress Tracking
+- **Visual Progress Bar**: Always visible, updates in real-time
+- **Field Validation**: Required fields marked with red asterisk (*)
+- **Character Counter**: Shows remaining characters for description
+- **File Size Validation**: Automatic validation for upload limits
+
+### 🔄 Issue Status Workflow
+1. **Received**: Issue logged in system
+2. **Under Review**: Team assessment and priority assignment
+3. **In Progress**: Active work on resolution
+4. **Resolved**: Issue completed and closed
+
+### ⏱️ Expected Response Times
+- **Emergency Issues**: Within 24 hours
+- **High Priority**: 1-3 business days
+- **Standard Issues**: 3-7 business days
+- **Low Priority**: 1-2 weeks
+
+-#### Event Categories Available:
+- 👥 **Community**: Clean-ups, celebrations, neighborhood meetings
+- 🎨 **Arts**: Markets, exhibitions, festivals
+- 🏃 **Sports**: Marathons, tournaments, workshops
+- 🏛️ **Municipal**: Council meetings, public forums, budget consultations
+- 💊 **Health**: Free screenings, wellness workshops
+- 🌳 **Environment**: Tree planting, conservation awareness
+- 📚 **Education**: Skills workshops, business seminars
+- 🚨 **Safety**: Neighborhood watch, crime prevention
+
+### 📊 Search Pattern Analytics
+1. **Automatic Tracking**: All searches are automatically tracked
+2. **View Analytics**: Click "📊 View My Patterns" button
+3. **Insights Include**:
+   - Total number of searches
+   - Top searched categories
+   - Preferred date ranges
+   - Average results per search
+   - Last search timestamp
+4. **Clear Patterns**: Reset your search history and recommendations
+
 ### 📊 Progress Tracking
 - **Visual Progress Bar**: Always visible, updates in real-time
 - **Field Validation**: Required fields marked with red asterisk (*)
@@ -147,7 +239,7 @@ https://github.com/ST10372065/PROG7312-POE.git
 
 ## Data Structures Implementation
 
-### Custom LinkedList Usage
+### 1. Custom LinkedList Usage
 
 The application implements a **custom LinkedList data structure** (`CustomLinkedList<T>`) for efficient issue management. This choice provides several advantages over standard collections:
 
@@ -157,5 +249,180 @@ The application implements a **custom LinkedList data structure** (`CustomLinked
 3. **Memory Efficiency**: No wasted memory from unused array slots
 4. **Flexible Traversal**: Forward and backward navigation capabilities
 
+### 2. 📖 Dictionary (`Dictionary<TKey, TValue>`)
+**Used For**: Event storage and fast ID-based lookups
+
+**Implementation**: `EventRepository.cs`
+
+**Data Structures**:
+- `Dictionary<string, LocalEvent>` - Events by ID
+- `Dictionary<string, List<LocalEvent>>` - Events by category
+- `Dictionary<DateTime, int>` - Date counts (derived from hashtable)
+- `Dictionary<string, int>` - Category counts (derived from hashtable)
+
+**Advantages**:
+- **O(1) Average Lookup**: Nearly instant access by key
+- **O(1) Average Insertion**: Fast additions
+- **Type Safety**: Generic implementation with compile-time checking
+- **Key Flexibility**: Support for custom key types
+
+### 3. 🔢 SortedDictionary (`SortedDictionary<TKey, TValue>`)
+**Used For**: Chronologically ordered event storage
+
+**Implementation**: `EventRepository.cs`
+
+**Data Structure**:
+- `SortedDictionary<DateTime, List<LocalEvent>>` - Events sorted by date
+
+**Advantages**:
+- **Automatic Sorting**: Events always sorted by date (binary search tree)
+- **O(log n) Operations**: Logarithmic insertion and lookup
+- **Range Queries**: Efficient date range filtering
+- **Ordered Traversal**: In-order traversal returns events chronologically
+
+### 4. ⚡ Hashtable (`System.Collections.Hashtable`)
+**Used For**: Ultra-fast category and date frequency tracking
+
+**Implementation**: `EventRepository.cs`, `SearchPatternService.cs`
+
+**Data Structures**:
+- `_categoryHashtable` - Category → event count mapping
+- `_dateHashtable` - Date string → event count mapping
+- `_categoryFrequency` - Category → search count mapping
+- `_dateRangeFrequency` - Date range → search count mapping
+- `_searchTermFrequency` - Search term → frequency mapping
+
+**Advantages**:
+- **O(1) Average Lookup**: Constant time access
+- **O(1) Average Insertion**: Instant additions
+- **Non-Generic Flexibility**: Can store any object type
+- **Dynamic Sizing**: Automatic resizing based on load factor
+
+### 5. 📚 Stack (`Stack<T>`)
+**Used For**: Event viewing history and search history tracking
+
+**Implementation**: 
+- `SearchPatternService.cs` - `Stack<SearchAction>`
+- `LocalEvents.cshtml` - JavaScript `EventStack` class
+
+**Characteristics**:
+- **LIFO (Last In, First Out)**: Most recent items accessed first
+- Generic implementation for type safety
+- Maximum size enforcement (20 for client, 100 for server)
+
+**Advantages**:
+- **O(1) Push**: Add items to top
+- **O(1) Pop**: Remove items from top
+- **O(1) Peek**: View top without removing
+- **Natural History**: Perfect for "back" navigation and undo operations
+- **Memory Efficient**: Fixed or bounded size prevents unlimited growth
+
+## Algorithms & Pattern Recognition
+
+### Intelligent Event Recommendations
+- AI-powered algorithm for personalized event suggestions
+- Analyzes user search patterns and interaction history
+- Adjusts recommendations based on user feedback and new events
+
+### Search Pattern Tracking
+- Custom middleware to log user search patterns
+- Stores search terms, filters, and interaction times
+- Analyzes data to improve search result relevance and recommendation accuracy
+
+### Pattern Recognition Workflow
+1. **Data Collection**: Logs user interactions with the search feature
+2. **Pattern Analysis**: Identifies trends and commonalities in search behavior
+3. **Recommendation Generation**: Creates personalized event suggestions
+4. **Feedback Loop**: Allows users to provide feedback on recommendations, improving future suggestions
+
+### 1. 🎯 Event Recommendation Algorithm
+**Implementation**: `SearchPatternService.CalculateRecommendation()`
+
+**Algorithm Type**: Weighted Scoring with Multi-factor Analysis
+
+**Scoring Factors** (0-1 normalized):
+1. **Category Match (40% weight)**
+   - Checks user's category search frequency
+   - Formula: `frequency / totalSearches`
+   - Higher weight due to strong preference indication
+
+2. **Date Preference (30% weight)**
+   - Matches event dates to user's preferred ranges
+   - Ranges: today, this week, this month, upcoming
+   - Formula: `rangeFrequency / totalSearches`
+
+3. **Popularity Score (20% weight)**
+   - Based on category event density
+   - Formula: `categoryEventCount / totalEvents`
+   - Ensures popular events are surfaced
+
+4. **Recency Bonus (10% weight)**
+   - Boosts events happening soon (within 14 days)
+   - Formula: `1.0 - (daysUntil / 14.0)`
+   - Prevents outdated recommendations
+
+### 2. 🔍 Search Pattern Analysis
+**Implementation**: `SearchPatternService.AnalyzePatterns()`
+
+**Algorithm Type**: Frequency Analysis with Aggregation
+
+**Process**:
+1. **Hashtable Traversal**: Convert hashtables to dictionaries for LINQ
+2. **Frequency Sorting**: Order categories/dates by search count
+3. **Top-K Selection**: Select top 5 categories, top 3 date ranges
+4. **Statistical Calculation**: Compute averages and totals
+
+**Time Complexity**: 
+- Hashtable conversion: O(m) where m = unique categories/dates
+- Sorting: O(m log m)
+- Overall: O(m log m) - typically m << n (unique values vs total searches)
+
+**Output Statistics**:
+- Total searches performed
+- Category frequency distribution
+- Date range preferences
+- Average results per search
+- Top categories and date ranges
+- Most common search terms
+
+### 3. 📊 Event Filtering Algorithm
+**Implementation**: `LocalEvents.cshtml` JavaScript `filterEvents()`
+
+**Algorithm Type**: Multi-criteria Filtering with Hashtable Optimization
+
+### 4. 🔄 Search Tracking with Debouncing
+**Implementation**: `SearchPatternTracker.trackSearch()`
+
+**Algorithm Type**: Debounced Asynchronous Tracking
+
+## Key Features Showcase
+
+### 🎯 Smart Recommendations
+- Real-time pattern learning from user searches
+- Multi-factor scoring algorithm
+- Personalized event suggestions
+- Transparent recommendation reasons
+
+### ⚡ Performance Optimizations
+- Hashtable-based O(1) category filtering
+- Client-side hashtable for instant search
+- Debounced search tracking
+- Efficient data structure selection
+
+### 📱 User Experience
+- Responsive design for all devices
+- Real-time search with live updates
+- Modal-based event details
+- Stack-based viewing history
+- Persistent history in localStorage
+
+### 🔧 Developer Features
+- Clean architecture with repository pattern
+- Dependency injection throughout
+- Generic data structures
+- Comprehensive XML documentation
+- RESTful API endpoints
+
 ## Video Link
-https://youtu.be/JXvtLSPzcg8
+- Part 1: https://youtu.be/JXvtLSPzcg8
+- Part 2: https://youtu.be/k6yIAYmmE9c
