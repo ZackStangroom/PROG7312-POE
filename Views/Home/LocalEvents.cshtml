@@ -52,6 +52,19 @@
                     </select>
                 </div>
             </div>
+            
+            <!-- Viewing History Buttons -->
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn btn-outline-secondary" id="viewHistoryBtn" style="display: none;">
+                    📚 View History (<span id="historyCount">0</span>)
+                </button>
+                <button class="btn btn-outline-primary" id="previousEventBtn" style="display: none;">
+                    ⬅️ Previous Event
+                </button>
+                <button class="btn btn-outline-danger" id="clearHistoryBtn" style="display: none;">
+                    🗑️ Clear History
+                </button>
+            </div>
         </div>
 
         <!-- Featured Events Section -->
@@ -85,7 +98,16 @@
                             };
                             
                             <div class="col-md-6 col-lg-4">
-                                <div class="event-card" data-category="@evt.Category" data-date="@evt.EventDate.ToString("yyyy-MM-dd")" data-event-id="@evt.Id">
+                                <div class="event-card" 
+                                     data-category="@evt.Category" 
+                                     data-date="@evt.EventDate.ToString("yyyy-MM-dd")" 
+                                     data-event-id="@evt.Id"
+                                     data-event-title="@evt.Title"
+                                     data-event-description="@evt.Description"
+                                     data-event-time="@evt.EventDate.ToString("h:mm tt")"
+                                     data-event-location="@evt.Location"
+                                     data-event-status="@evt.Status"
+                                     data-event-created="@evt.CreatedAt.ToString("MMM dd, yyyy")">
                                     <div class="event-badge @categoryClass">@evt.Category</div>
                                     <div class="event-date">
                                         <div class="event-day">@evt.EventDate.Day</div>
@@ -204,6 +226,74 @@
     </div>
 </div>
 
+<!-- Event Details Modal -->
+<div class="event-modal-overlay" id="eventModalOverlay" style="display: none;">
+    <div class="event-modal">
+        <div class="event-modal-header">
+            <h2 id="modalEventTitle">Event Title</h2>
+            <button class="event-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="event-modal-body">
+            <div class="modal-event-badge" id="modalEventBadge">Category</div>
+            
+            <div class="modal-section">
+                <h4>📅 Date & Time</h4>
+                <p id="modalEventDateTime">Date and time</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>📍 Location</h4>
+                <p id="modalEventLocation">Location details</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>📝 Description</h4>
+                <p id="modalEventDescription">Event description</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>ℹ️ Event Information</h4>
+                <div class="modal-info-grid">
+                    <div>
+                        <strong>Status:</strong>
+                        <span id="modalEventStatus">Status</span>
+                    </div>
+                    <div>
+                        <strong>Created:</strong>
+                        <span id="modalEventCreated">Created date</span>
+                    </div>
+                    <div>
+                        <strong>Event ID:</strong>
+                        <span id="modalEventId">ID</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="event-modal-footer">
+            <button class="btn-modal-close" id="closeModalBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="event-modal-overlay" id="historyModalOverlay" style="display: none;">
+    <div class="event-modal">
+        <div class="event-modal-header">
+            <h2>📚 Viewing History</h2>
+            <button class="event-modal-close" id="closeHistoryModalBtn">&times;</button>
+        </div>
+        <div class="event-modal-body">
+            <p style="color: #666; margin-bottom: 20px;">Click on any event to view its details. Most recent views appear at the top.</p>
+            <div id="historyList" style="max-height: 400px; overflow-y: auto;">
+                <!-- History items will be populated here -->
+            </div>
+        </div>
+        <div class="event-modal-footer">
+            <button class="btn-modal-close" id="closeHistoryModalBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- Dictionary Debug Info (remove in production) -->
 @if (Model != null)
 {
@@ -233,6 +323,127 @@ else
         const scrollContainer = document.querySelector('.events-scroll-container');
         const scrollIndicator = document.getElementById('scrollIndicator');
         const visibleEventsCount = document.getElementById('visibleEventsCount');
+        
+        // Modal elements
+        const modalOverlay = document.getElementById('eventModalOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeModalBtn2 = document.getElementById('closeModalBtn2');
+        
+        // History modal elements
+        const historyModalOverlay = document.getElementById('historyModalOverlay');
+        const closeHistoryModalBtn = document.getElementById('closeHistoryModalBtn');
+        const closeHistoryModalBtn2 = document.getElementById('closeHistoryModalBtn2');
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const previousEventBtn = document.getElementById('previousEventBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const historyList = document.getElementById('historyList');
+        const historyCount = document.getElementById('historyCount');
+        
+        // Stack for viewing history (LIFO - Last In, First Out)
+        class EventStack {
+            constructor() {
+                this.items = [];
+                this.maxSize = 20; // Limit stack size to prevent memory issues
+            }
+            
+            // Push event to stack
+            push(eventData) {
+                // Remove duplicate if exists (to avoid same event multiple times in a row)
+                const existingIndex = this.items.findIndex(item => item.id === eventData.id);
+                if (existingIndex === 0) {
+                    // If it's already at the top, don't add again
+                    return;
+                }
+                if (existingIndex > 0) {
+                    // Remove from middle/bottom
+                    this.items.splice(existingIndex, 1);
+                }
+                
+                // Add to top of stack
+                this.items.unshift(eventData);
+                
+                // Maintain max size
+                if (this.items.length > this.maxSize) {
+                    this.items.pop();
+                }
+                
+                this.saveToLocalStorage();
+            }
+            
+            // Pop event from stack (remove and return top item)
+            pop() {
+                if (this.items.length > 0) {
+                    const item = this.items.shift();
+                    this.saveToLocalStorage();
+                    return item;
+                }
+                return null;
+            }
+            
+            // Peek at top item without removing
+            peek() {
+                return this.items.length > 0 ? this.items[0] : null;
+            }
+            
+            // Get all items (for display purposes)
+            getAll() {
+                return [...this.items];
+            }
+            
+            // Check if stack is empty
+            isEmpty() {
+                return this.items.length === 0;
+            }
+            
+            // Get stack size
+            size() {
+                return this.items.length;
+            }
+            
+            // Clear stack
+            clear() {
+                this.items = [];
+                this.saveToLocalStorage();
+            }
+            
+            // Save to localStorage
+            saveToLocalStorage() {
+                localStorage.setItem('eventViewHistory', JSON.stringify(this.items));
+            }
+            
+            // Load from localStorage
+            loadFromLocalStorage() {
+                const stored = localStorage.getItem('eventViewHistory');
+                if (stored) {
+                    try {
+                        this.items = JSON.parse(stored);
+                    } catch (e) {
+                        console.error('Error loading history:', e);
+                        this.items = [];
+                    }
+                }
+            }
+        }
+        
+        // Initialize stack
+        const viewHistory = new EventStack();
+        viewHistory.loadFromLocalStorage();
+        
+        // Update UI based on stack state
+        function updateHistoryUI() {
+            const stackSize = viewHistory.size();
+            historyCount.textContent = stackSize;
+            
+            if (stackSize > 0) {
+                viewHistoryBtn.style.display = 'inline-block';
+                previousEventBtn.style.display = 'inline-block';
+                clearHistoryBtn.style.display = 'inline-block';
+            } else {
+                viewHistoryBtn.style.display = 'none';
+                previousEventBtn.style.display = 'none';
+                clearHistoryBtn.style.display = 'none';
+            }
+        }
 
         // Function to update visible events count
         function updateVisibleCount() {
@@ -327,6 +538,95 @@ else
             }
         }
 
+        // Function to open modal with event details
+        function openEventModal(eventData, addToHistory = true) {
+            // Add to history stack
+            if (addToHistory) {
+                viewHistory.push(eventData);
+                updateHistoryUI();
+            }
+            
+            // Populate modal
+            document.getElementById('modalEventTitle').textContent = eventData.title;
+            document.getElementById('modalEventBadge').textContent = eventData.category;
+            document.getElementById('modalEventDateTime').textContent = `${new Date(eventData.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at ${eventData.time}`;
+            document.getElementById('modalEventLocation').textContent = eventData.location;
+            document.getElementById('modalEventDescription').textContent = eventData.description;
+            document.getElementById('modalEventStatus').textContent = eventData.status;
+            document.getElementById('modalEventCreated').textContent = eventData.created;
+            document.getElementById('modalEventId').textContent = eventData.id;
+            
+            // Show modal
+            modalOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Function to close modal
+        function closeEventModal() {
+            modalOverlay.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+        
+        // Function to show history modal
+        function showHistoryModal() {
+            const history = viewHistory.getAll();
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No viewing history yet.</p>';
+            } else {
+                historyList.innerHTML = history.map((event, index) => `
+                    <div class="history-item" data-event-index="${index}" style="
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        margin-bottom: 10px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        background: white;
+                    " onmouseover="this.style.borderColor='#667eea'; this.style.transform='translateX(5px)';" 
+                       onmouseout="this.style.borderColor='#e0e0e0'; this.style.transform='translateX(0)';">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #1a1a1a; margin-bottom: 5px;">${event.title}</div>
+                                <div style="font-size: 0.9rem; color: #666;">
+                                    <span style="margin-right: 15px;">📍 ${event.location}</span>
+                                    <span>📅 ${new Date(event.date).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                padding: 4px 10px;
+                                border-radius: 12px;
+                                font-size: 0.75rem;
+                                font-weight: 600;
+                                white-space: nowrap;
+                            ">${event.category}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add click handlers to history items
+                document.querySelectorAll('.history-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.eventIndex);
+                        const eventData = history[index];
+                        closeHistoryModal();
+                        openEventModal(eventData, false); // Don't add to history again
+                    });
+                });
+            }
+            
+            historyModalOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Function to close history modal
+        function closeHistoryModal() {
+            historyModalOverlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
         // Add event listeners
         searchInput.addEventListener('input', filterEvents);
         categoryFilter.addEventListener('change', filterEvents);
@@ -336,13 +636,83 @@ else
         document.querySelectorAll('.btn-event-details').forEach(button => {
             button.addEventListener('click', function() {
                 const eventCard = this.closest('.event-card');
-                const eventTitle = eventCard.querySelector('.event-title').textContent;
-                alert(`Event details for: ${eventTitle}\n\nMore details coming soon!`);
+                const eventData = {
+                    title: eventCard.dataset.eventTitle,
+                    description: eventCard.dataset.eventDescription,
+                    category: eventCard.dataset.category,
+                    date: eventCard.dataset.date,
+                    time: eventCard.dataset.eventTime,
+                    location: eventCard.dataset.eventLocation,
+                    status: eventCard.dataset.eventStatus,
+                    created: eventCard.dataset.eventCreated,
+                    id: eventCard.dataset.eventId
+                };
+                openEventModal(eventData);
             });
         });
 
-        // Initial count update
+        // Modal close handlers
+        closeModalBtn.addEventListener('click', closeEventModal);
+        closeModalBtn2.addEventListener('click', closeEventModal);
+        
+        // Close modal when clicking outside
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeEventModal();
+            }
+        });
+
+        // History modal handlers
+        viewHistoryBtn.addEventListener('click', showHistoryModal);
+        closeHistoryModalBtn.addEventListener('click', closeHistoryModal);
+        closeHistoryModalBtn2.addEventListener('click', closeHistoryModal);
+        
+        historyModalOverlay.addEventListener('click', function(e) {
+            if (e.target === historyModalOverlay) {
+                closeHistoryModal();
+            }
+        });
+
+        // Previous event button (pop from stack)
+        previousEventBtn.addEventListener('click', function() {
+            if (!viewHistory.isEmpty()) {
+                // Pop removes the most recent (current) event
+                viewHistory.pop();
+                
+                // Peek at the new top (previous event)
+                const previousEvent = viewHistory.peek();
+                
+                if (previousEvent) {
+                    openEventModal(previousEvent, false); // Don't add back to history
+                }
+                
+                updateHistoryUI();
+            }
+        });
+        
+        // Clear history button
+        clearHistoryBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear your viewing history?')) {
+                viewHistory.clear();
+                updateHistoryUI();
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (modalOverlay.style.display === 'flex') {
+                    closeEventModal();
+                }
+                if (historyModalOverlay.style.display === 'flex') {
+                    closeHistoryModal();
+                }
+            }
+        });
+
+        // Initial UI update
         updateVisibleCount();
+        updateHistoryUI();
     });
 </script>
 
