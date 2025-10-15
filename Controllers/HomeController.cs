@@ -108,5 +108,13 @@ namespace PROG7312_POE.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        // Add this method to your HomeController
+        public IActionResult GetRecommendations()
+        {
+            var searchPatternService = HttpContext.RequestServices.GetRequiredService<ISearchPatternService>();
+            var recommendations = searchPatternService.GetRecommendedEvents(6);
+            return Json(recommendations);
+        }
     }
 }

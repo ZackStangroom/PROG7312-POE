@@ -361,6 +361,250 @@ else
             categoryDetails: Object.fromEntries(Object.entries(categoryHashtable).map(([k, v]) => [k, v.length]))
         });
         
+        // Search Pattern Tracking System
+        class SearchPatternTracker {
+            constructor() {
+                this.searchDelay = 1000; // Debounce delay
+                this.searchTimer = null;
+            }
+
+            // Track search with debouncing
+            trackSearch(searchTerm, category, dateRange, resultsCount) {
+                clearTimeout(this.searchTimer);
+                
+                this.searchTimer = setTimeout(() => {
+                    const searchAction = {
+                        searchTerm: searchTerm || null,
+                        category: category || null,
+                        dateRange: dateRange || null,
+                        resultsCount: resultsCount,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // Send to server
+                    fetch('/api/SearchPattern/track', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(searchAction)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('✅ Search tracked:', searchAction);
+                        // Update recommendations after tracking
+                        this.updateRecommendations();``
+                    })
+                    .catch(error => console.error('❌ Error tracking search:', error));
+                }, this.searchDelay);
+            }
+
+            // Fetch and display recommendations
+            async updateRecommendations() {
+                try {
+                    const response = await fetch('/api/SearchPattern/recommendations?maxResults=6');
+                    const recommendations = await response.json();
+                    
+                    if (recommendations && recommendations.length > 0) {
+                        this.displayRecommendations(recommendations);
+                    }
+                } catch (error) {
+                    console.error('❌ Error fetching recommendations:', error);
+                }
+            }
+
+            // Display recommendations in UI with collapsible dropdown
+            displayRecommendations(recommendations) {
+    let recommendationsContainer = document.getElementById('recommendationsContainer');
+    
+    if (!recommendationsContainer) {
+        // Create recommendations section if it doesn't exist
+        recommendationsContainer = document.createElement('div');
+        recommendationsContainer.id = 'recommendationsContainer';
+        recommendationsContainer.className = 'info-card';
+        recommendationsContainer.style.marginTop = '20px';
+        
+        const featuredEventsSection = document.querySelector('.info-card');
+        featuredEventsSection.parentNode.insertBefore(recommendationsContainer, featuredEventsSection);
+    }
+
+    // Check localStorage, but default to collapsed (true) if not set
+    const storedState = localStorage.getItem('recommendationsCollapsed');
+    const isCollapsed = storedState === null ? true : storedState === 'true';
+
+    recommendationsContainer.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; cursor: pointer; user-select: none;" 
+             onclick="window.toggleRecommendations()" 
+             id="recommendationsHeader">
+            <div style="flex: 1;">
+                <h3 style="display: inline-flex; align-items: center; margin: 0;">
+                    <span id="recommendationsToggleIcon" style="transition: transform 0.3s ease; display: inline-block; margin-right: 10px;">
+                        ${isCollapsed ? '▶' : '▼'}
+                    </span>
+                    🎯 Recommended For You
+                    <span style="font-size: 0.8rem; color: #999; margin-left: 10px; font-weight: normal;">(${recommendations.length} events)</span>
+                </h3>
+                <p class="subtitle" style="margin: 5px 0 0 35px;">Based on your search patterns and preferences - Click to expand</p>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation(); searchTracker.viewAnalysis();" 
+                    style="flex-shrink: 0;">
+                📊 View My Patterns
+            </button>
+        </div>
+        <div id="recommendationsContent" style="display: ${isCollapsed ? 'none' : 'block'}; transition: all 0.3s ease;">
+            <div class="row g-3">
+                ${recommendations.map((rec, index) => {
+                    const evt = rec.event;
+                    
+                    return `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="event-card recommended-event" style="border: 2px solid #667eea; position: relative;">
+                                <div class="event-badge event-badge-${evt.category.toLowerCase()}">${evt.category}</div>
+                                <div class="event-date">
+                                    <div class="event-day">${new Date(evt.eventDate).getDate()}</div>
+                                    <div class="event-month">${new Date(evt.eventDate).toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
+                                </div>
+                                <h4 class="event-title">${evt.title}</h4>
+                                <div class="event-details">
+                                    <div class="event-detail-item">
+                                        <span class="event-icon">🕐</span>
+                                        <span>${new Date(evt.eventDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                                    </div>
+                                    <div class="event-detail-item">
+                                        <span class="event-icon">📍</span>
+                                        <span>${evt.location}</span>
+                                    </div>
+                                </div>
+                                <p class="event-description">${evt.description}</p>
+                                <div style="margin-top: 10px; margin-bottom: 10px;">
+                                    ${rec.recommendationReasons.map(reason => 
+                                        `<span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-right: 5px; margin-bottom: 5px;">${reason}</span>`
+                                    ).join('')}
+                                </div>
+                                <button class="btn-event-details" data-event-id="${evt.id}">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    // Add click handlers to the new recommendation event detail buttons
+    recommendationsContainer.querySelectorAll('.btn-event-details').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering the collapse
+            const eventId = this.dataset.eventId;
+            // Find the event data from recommendations
+            const rec = recommendations.find(r => r.event.id === eventId);
+            if (rec) {
+                const evt = rec.event;
+                const eventData = {
+                    title: evt.title,
+                    description: evt.description,
+                    category: evt.category,
+                    date: new Date(evt.eventDate).toISOString().split('T')[0],
+                    time: new Date(evt.eventDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+                    location: evt.location,
+                    status: evt.status,
+                    created: new Date(evt.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    id: evt.id
+                };
+                openEventModal(eventData);
+            }
+        });
+    });
+}
+
+            // Show pattern analysis in modal
+            async viewAnalysis() {
+                try {
+                    const response = await fetch('/api/SearchPattern/analysis');
+                    const analysis = await response.json();
+                    
+                    this.showAnalysisModal(analysis);
+                } catch (error) {
+                    console.error('❌ Error fetching analysis:', error);
+                }
+            }
+
+            showAnalysisModal(analysis) {
+                const modal = document.createElement('div');
+                modal.className = 'event-modal-overlay';
+                modal.style.display = 'flex';
+                
+                const topCategories = analysis.topCategories.map((cat, i) => 
+                    `<li><strong>#${i + 1}</strong> ${cat} (${analysis.categoryFrequency[cat] || 0} searches)</li>`
+                ).join('');
+
+                const topDateRanges = analysis.topDateRanges.map((range, i) => 
+                    `<li><strong>#${i + 1}</strong> ${range} (${analysis.dateRangeFrequency[range] || 0} searches)</li>`
+                ).join('');
+
+                modal.innerHTML = `
+                    <div class="event-modal">
+                        <div class="event-modal-header">
+                            <h2>📊 Your Search Patterns</h2>
+                            <button class="event-modal-close" onclick="this.closest('.event-modal-overlay').remove()">&times;</button>
+                        </div>
+                        <div class="event-modal-body">
+                            <div class="modal-section">
+                                <h4>📈 Overview</h4>
+                                <p><strong>Total Searches:</strong> ${analysis.totalSearches}</p>
+                                <p><strong>Average Results:</strong> ${analysis.averageResultsPerSearch.toFixed(1)} events per search</p>
+                                ${analysis.lastSearchTime ? `<p><strong>Last Search:</strong> ${new Date(analysis.lastSearchTime).toLocaleString()}</p>` : ''}
+                            </div>
+                            
+                            <div class="modal-section">
+                                <h4>📂 Top Categories</h4>
+                                <ul style="list-style-position: inside;">
+                                    ${topCategories || '<li>No category searches yet</li>'}
+                                </ul>
+                            </div>
+                            
+                            <div class="modal-section">
+                                <h4>📅 Preferred Timeframes</h4>
+                                <ul style="list-style-position: inside;">
+                                    ${topDateRanges || '<li>No date range searches yet</li>'}
+                                </ul>
+                            </div>
+                            
+                            <div class="alert alert-info" style="margin-top: 15px;">
+                                💡 We use this information to recommend events you'll love!
+                            </div>
+                        </div>
+                        <div class="event-modal-footer">
+                            <button class="btn btn-danger" onclick="searchTracker.clearPatterns()">Clear My Patterns</button>
+                            <button class="btn-modal-close" onclick="this.closest('.event-modal-overlay').remove()">Close</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+
+            async clearPatterns() {
+                if (confirm('Are you sure you want to clear your search patterns? This will reset all recommendations.')) {
+                    try {
+                        await fetch('/api/SearchPattern/clear', { method: 'DELETE' });
+                        alert('✅ Search patterns cleared successfully!');
+                        document.querySelector('.event-modal-overlay')?.remove();
+                        document.getElementById('recommendationsContainer')?.remove();
+                    } catch (error) {
+                        console.error('❌ Error clearing patterns:', error);
+                        alert('Failed to clear patterns. Please try again.');
+                    }
+                }
+            }
+        }
+
+        // Initialize tracker
+        const searchTracker = new SearchPatternTracker();
+        window.searchTracker = searchTracker; // Make globally accessible
+
+        // Load initial recommendations
+        searchTracker.updateRecommendations();
+
         // Modal elements
         const modalOverlay = document.getElementById('eventModalOverlay');
         const closeModalBtn = document.getElementById('closeModalBtn');
@@ -497,6 +741,7 @@ else
             }
         }
 
+        // Modified filterEvents function to include tracking
         function filterEvents() {
             const searchTerm = searchInput.value.toLowerCase();
             const selectedCategory = categoryFilter.value;
@@ -505,7 +750,6 @@ else
 
             // Use hashtable for efficient category filtering
             if (selectedCategory && !searchTerm && !selectedDate) {
-                // O(1) hashtable lookup for category
                 eventCards.forEach(card => {
                     card.parentElement.style.display = 'none';
                 });
@@ -566,10 +810,12 @@ else
                 }
             }
 
-            // Reset scroll position when filtering
             if (scrollContainer) {
                 scrollContainer.scrollTop = 0;
             }
+
+            // Track the search
+            searchTracker.trackSearch(searchTerm, selectedCategory, selectedDate, visibleCount);
         }
 
         // Function to open modal with event details
@@ -754,6 +1000,28 @@ else
         updateVisibleCount();
         updateHistoryUI();
     });
+</script>
+
+<!-- Global function to toggle recommendations visibility -->
+<script>
+    window.toggleRecommendations = function() {
+        const content = document.getElementById('recommendationsContent');
+        const icon = document.getElementById('recommendationsToggleIcon');
+        
+        if (content && icon) {
+            const isCurrentlyHidden = content.style.display === 'none';
+            
+            // Toggle display
+            content.style.display = isCurrentlyHidden ? 'block' : 'none';
+            
+            // Rotate icon
+            icon.style.transform = isCurrentlyHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+            icon.textContent = isCurrentlyHidden ? '▼' : '▶';
+            
+            // Save state to localStorage
+            localStorage.setItem('recommendationsCollapsed', !isCurrentlyHidden);
+        }
+    };
 </script>
 
 @section Scripts {

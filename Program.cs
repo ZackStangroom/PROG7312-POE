@@ -16,6 +16,7 @@ namespace PROG7312_POE
             builder.Services.AddSingleton<IIssueReportRepository, IssueReportRepository>();
             builder.Services.AddScoped<IIssueReportService, IssueReportService>();
             builder.Services.AddSingleton<IEventRepository, EventRepository>();
+            builder.Services.AddSingleton<ISearchPatternService, SearchPatternService>();
 
             var app = builder.Build();
 
