@@ -198,7 +198,7 @@ https://github.com/ST10372065/PROG7312-POE.git
 - **Standard Issues**: 3-7 business days
 - **Low Priority**: 1-2 weeks
 
--#### Event Categories Available:
+#### Event Categories Available:
 - 👥 **Community**: Clean-ups, celebrations, neighborhood meetings
 - 🎨 **Arts**: Markets, exhibitions, festivals
 - 🏃 **Sports**: Marathons, tournaments, workshops
