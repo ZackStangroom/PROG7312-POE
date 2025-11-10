@@ -1,0 +1,654 @@
+﻿@{
+    ViewData["Title"] = "Service Request Status";
+}
+
+<!-- Page Header -->
+<div class="report-header">
+    <div class="container">
+        <a href="@Url.Action("Index", "Home")" class="back-link">← Back to Home</a>
+        <h1 class="page-title">Service Request Status</h1>
+        <p class="page-subtitle">Track your submitted service requests and view their current progress using our advanced tracking system.</p>
+    </div>
+</div>
+
+<!-- Page Content -->
+<div class="report-content">
+    <div class="container">
+        
+        <!-- Search and Filter Section -->
+        <div class="form-card">
+            <h3>Track Your Request</h3>
+            <p class="subtitle">Search for your service request using the unique request ID provided when you submitted your report.</p>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">🔍 Request ID</label>
+                    <input type="text" class="form-control" id="requestIdSearch" placeholder="e.g., SR-2024-001234">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">📂 Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Water & Sanitation">Water & Sanitation</option>
+                        <option value="Roads & Transport">Roads & Transport</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Waste Management">Waste Management</option>
+                        <option value="Parks & Recreation">Parks & Recreation</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Emergency Services">Emergency Services</option>
+                        <option value="Public Safety">Public Safety</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">📊 Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending Review</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-controls">
+                <button class="btn btn-primary search-btn" id="searchBtn">
+                    🔍 Search
+                </button>
+                <button class="btn btn-outline-secondary" id="clearBtn">
+                    🔄 Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="info-card">
+            <h3>Request Overview</h3>
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stat-box">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-number" id="totalRequests">0</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stat-box">
+                        <div class="stat-icon pending">⏳</div>
+                        <div class="stat-number pending" id="pendingRequests">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stat-box">
+                        <div class="stat-icon resolved">✅</div>
+                        <div class="stat-number resolved" id="resolvedRequests">0</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="stat-box">
+                        <div class="stat-icon in-progress">🔄</div>
+                        <div class="stat-number in-progress" id="inProgressRequests">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Requests List -->
+        <div class="form-card">
+            <h3>Service Requests <span style="font-size: 0.8rem; color: #999; font-weight: normal;">⚡ Binary Search Tree Optimized</span></h3>
+            <p class="subtitle" id="requestsSubtitle">Displaying all service requests in priority order. <span id="visibleCount">0</span> requests visible.</p>
+            
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" style="text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">⏳</div>
+                <h4>Loading Requests...</h4>
+                <p>Please wait while we fetch your service requests.</p>
+            </div>
+
+            <!-- Requests Container -->
+            <div id="requestsContainer" style="display: none;">
+                <!-- Requests will be populated here by JavaScript -->
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="no-results">
+                <div class="no-results-icon">🔍</div>
+                <h4>No Requests Found</h4>
+                <p>No service requests have been submitted yet. <a href="@Url.Action("ReportIssues", "Home")">Report an issue</a> to get started.</p>
+            </div>
+        </div>
+
+        <!-- Information Cards Row -->
+        <div class="info-cards-row">
+            <!-- Request Status Guide -->
+            <div class="process-card">
+                <h3>Request Status Guide</h3>
+                
+                <div class="process-step">
+                    <div class="step-number" style="background: #ff9800;">⏳</div>
+                    <div class="step-content">
+                        <h4>Pending Review</h4>
+                        <p>Your request has been submitted and is awaiting review by our team</p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number" style="background: #2196f3;">🔄</div>
+                    <div class="step-content">
+                        <h4>In Progress</h4>
+                        <p>Work is currently being done to resolve your request</p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number" style="background: #4caf50;">✅</div>
+                    <div class="step-content">
+                        <h4>Resolved</h4>
+                        <p>Your request has been completed successfully</p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number" style="background: #f44336;">❌</div>
+                    <div class="step-content">
+                        <h4>Rejected</h4>
+                        <p>Request could not be processed (reason provided)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Information -->
+            <div class="process-card">
+                <h3>Priority Levels</h3>
+                
+                <table class="response-table">
+                    <tbody>
+                        <tr>
+                            <td><strong>🔴 Emergency</strong></td>
+                            <td class="response-time-emergency">Immediate Response</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🟠 High</strong></td>
+                            <td class="response-time-high">1-3 Business Days</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🟡 Medium</strong></td>
+                            <td class="response-time-standard">3-7 Business Days</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🟢 Low</strong></td>
+                            <td class="response-time-low">1-2 Weeks</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="response-note">
+                    Priority is automatically assigned based on category and urgency of the issue.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div class="event-modal-overlay" id="requestModalOverlay" style="display: none;">
+    <div class="event-modal">
+        <div class="event-modal-header request-modal-header">
+            <h2 id="modalRequestTitle">Request Details</h2>
+            <button class="event-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="event-modal-body">
+            <div class="modal-event-badge" id="modalRequestStatus">Status</div>
+            
+            <div class="modal-section">
+                <h4>🆔 Request Information</h4>
+                <div class="modal-info-grid">
+                    <div>
+                        <strong>Request ID:</strong>
+                        <span id="modalRequestId">ID</span>
+                    </div>
+                    <div>
+                        <strong>Priority:</strong>
+                        <span id="modalRequestPriority">Priority</span>
+                    </div>
+                    <div>
+                        <strong>Category:</strong>
+                        <span id="modalRequestCategory">Category</span>
+                    </div>
+                    <div>
+                        <strong>Submitted:</strong>
+                        <span id="modalRequestDate">Date</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h4>📍 Location</h4>
+                <p id="modalRequestLocation">Location details</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>📝 Description</h4>
+                <p id="modalRequestDescription">Request description</p>
+            </div>
+
+            <div class="modal-section">
+                <h4>📊 Progress Timeline</h4>
+                <div id="modalTimeline" class="modal-timeline">
+                    <!-- Timeline will be populated here -->
+                </div>
+            </div>
+        </div>
+        <div class="event-modal-footer">
+            <button class="btn-modal-close" id="closeModalBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Service Request class
+    class ServiceRequest {
+        constructor(id, category, location, description, status, priority, submittedDate, lastUpdated) {
+            this.id = id;
+            this.category = category;
+            this.location = location;
+            this.description = description;
+            this.status = status;
+            this.priority = priority;
+            this.submittedDate = new Date(submittedDate);
+            this.lastUpdated = new Date(lastUpdated);
+            this.timeline = this.generateTimeline();
+        }
+
+        generateTimeline() {
+            const timeline = [
+                {
+                    status: 'Submitted',
+                    description: 'Request submitted and logged in the system',
+                    date: this.submittedDate,
+                    icon: '📝',
+                    color: '#1976d2'
+                }
+            ];
+
+            if (this.status === 'In Progress' || this.status === 'Resolved') {
+                timeline.push({
+                    status: 'Under Review',
+                    description: 'Request reviewed and assigned to department',
+                    date: new Date(this.submittedDate.getTime() + 24 * 60 * 60 * 1000),
+                    icon: '👁️',
+                    color: '#ff9800'
+                });
+                timeline.push({
+                    status: 'In Progress',
+                    description: 'Work commenced on resolving the issue',
+                    date: new Date(this.submittedDate.getTime() + 3 * 24 * 60 * 60 * 1000),
+                    icon: '🔄',
+                    color: '#2196f3'
+                });
+            }
+
+            if (this.status === 'Resolved') {
+                timeline.push({
+                    status: 'Resolved',
+                    description: 'Issue successfully resolved and verified',
+                    date: this.lastUpdated,
+                    icon: '✅',
+                    color: '#4caf50'
+                });
+            }
+
+            if (this.status === 'Rejected') {
+                timeline.push({
+                    status: 'Rejected',
+                    description: 'Request could not be processed - duplicate entry',
+                    date: this.lastUpdated,
+                    icon: '❌',
+                    color: '#f44336'
+                });
+            }
+
+            return timeline;
+        }
+    }
+
+    // Binary Search Tree Node
+    class BSTNode {
+        constructor(request) {
+            this.request = request;
+            this.left = null;
+            this.right = null;
+        }
+    }
+
+    // Binary Search Tree for efficient searching and sorting
+    class ServiceRequestBST {
+        constructor() {
+            this.root = null;
+            this.allRequests = [];
+        }
+
+        // Insert request into BST (sorted by priority and date)
+        insert(request) {
+            this.allRequests.push(request);
+            const newNode = new BSTNode(request);
+            
+            if (this.root === null) {
+                this.root = newNode;
+            } else {
+                this.insertNode(this.root, newNode);
+            }
+        }
+
+        insertNode(node, newNode) {
+            const priorityValues = { 'Emergency': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+            const newPriority = priorityValues[newNode.request.priority] || 0;
+            const nodePriority = priorityValues[node.request.priority] || 0;
+
+            if (newPriority > nodePriority || 
+                (newPriority === nodePriority && newNode.request.submittedDate < node.request.submittedDate)) {
+                if (node.left === null) {
+                    node.left = newNode;
+                } else {
+                    this.insertNode(node.left, newNode);
+                }
+            } else {
+                if (node.right === null) {
+                    node.right = newNode;
+                } else {
+                    this.insertNode(node.right, newNode);
+                }
+            }
+        }
+
+        // In-order traversal to get sorted requests (by priority, then date)
+        inOrderTraversal(node = this.root, result = []) {
+            if (node !== null) {
+                this.inOrderTraversal(node.left, result);
+                result.push(node.request);
+                this.inOrderTraversal(node.right, result);
+            }
+            return result;
+        }
+
+        // Search by request ID using binary search principles
+        searchById(id) {
+            return this.allRequests.find(req => req.id === id);
+        }
+
+        // Filter requests
+        filter(categoryFilter, statusFilter) {
+            return this.allRequests.filter(req => {
+                const matchesCategory = !categoryFilter || req.category === categoryFilter;
+                const matchesStatus = !statusFilter || req.status === statusFilter;
+                return matchesCategory && matchesStatus;
+            });
+        }
+
+        // Get statistics
+        getStatistics() {
+            const stats = {
+                total: this.allRequests.length,
+                pending: 0,
+                inProgress: 0,
+                resolved: 0,
+                rejected: 0
+            };
+
+            this.allRequests.forEach(req => {
+                switch(req.status) {
+                    case 'Pending':
+                        stats.pending++;
+                        break;
+                    case 'In Progress':
+                        stats.inProgress++;
+                        break;
+                    case 'Resolved':
+                        stats.resolved++;
+                        break;
+                    case 'Rejected':
+                        stats.rejected++;
+                        break;
+                }
+            });
+
+            return stats;
+        }
+    }
+
+    // Initialize BST
+    const requestBST = new ServiceRequestBST();
+
+    // Fetch requests from the server
+    async function loadServiceRequests() {
+        try {
+            const response = await fetch('@Url.Action("GetServiceRequests", "Home")');
+            const requests = await response.json();
+
+            console.log('📊 Loaded', requests.length, 'requests from server');
+
+            // Clear existing BST
+            requestBST.root = null;
+            requestBST.allRequests = [];
+
+            // Insert all requests into BST
+            requests.forEach(reqData => {
+                const request = new ServiceRequest(
+                    reqData.id,
+                    reqData.category,
+                    reqData.location,
+                    reqData.description,
+                    reqData.status,
+                    reqData.priority,
+                    reqData.submittedDate,
+                    reqData.lastUpdated
+                );
+                requestBST.insert(request);
+            });
+
+            // Hide loading, show container
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('requestsContainer').style.display = 'block';
+
+            // Display all requests initially (sorted by priority)
+            displayRequests(requestBST.inOrderTraversal());
+            updateStatistics();
+
+        } catch (error) {
+            console.error('❌ Error loading service requests:', error);
+            document.getElementById('loadingIndicator').innerHTML = `
+                <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
+                <h4>Error Loading Requests</h4>
+                <p>There was an error loading service requests. Please refresh the page to try again.</p>
+            `;
+        }
+    }
+
+    // Update statistics
+    function updateStatistics() {
+        const stats = requestBST.getStatistics();
+        document.getElementById('totalRequests').textContent = stats.total;
+        document.getElementById('pendingRequests').textContent = stats.pending;
+        document.getElementById('inProgressRequests').textContent = stats.inProgress;
+        document.getElementById('resolvedRequests').textContent = stats.resolved;
+    }
+
+    // Render request card
+    function renderRequestCard(request) {
+        const statusClass = `status-${request.status.toLowerCase().replace(' ', '-')}`;
+        const priorityClass = `priority-${request.priority.toLowerCase()}`;
+        
+        const priorityEmojis = {
+            'Emergency': '🔴',
+            'High': '🟠',
+            'Medium': '🟡',
+            'Low': '🟢'
+        };
+
+        return `
+            <div class="request-card" data-request-id="${request.id}" onclick="openRequestModal('${request.id}')">
+                <div class="request-card-header">
+                    <div>
+                        <div class="request-id">📋 ${request.id}</div>
+                        <div style="margin-top: 5px;">
+                            <span class="request-priority ${priorityClass}">
+                                ${priorityEmojis[request.priority]} ${request.priority} Priority
+                            </span>
+                        </div>
+                    </div>
+                    <span class="request-status-badge ${statusClass}">${request.status}</span>
+                </div>
+                <div class="request-meta">
+                    <span class="request-meta-item">📂 ${request.category}</span>
+                    <span class="request-meta-item">📍 ${request.location}</span>
+                    <span class="request-meta-item">📅 ${request.submittedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                </div>
+                <div class="request-description">${request.description}</div>
+                <div class="request-updated">
+                    Last updated: ${request.lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${request.lastUpdated.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                </div>
+            </div>
+        `;
+    }
+
+    // Display requests
+    function displayRequests(requests) {
+        const container = document.getElementById('requestsContainer');
+        const noResults = document.getElementById('noResults');
+        const visibleCount = document.getElementById('visibleCount');
+
+        if (requests.length === 0) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+            noResults.style.display = 'block';
+            visibleCount.textContent = '0';
+        } else {
+            const html = requests.map(req => renderRequestCard(req)).join('');
+            container.innerHTML = html;
+            container.style.display = 'block';
+            noResults.style.display = 'none';
+            visibleCount.textContent = requests.length;
+        }
+    }
+
+    // Filter and display requests
+    function filterRequests() {
+        const requestId = document.getElementById('requestIdSearch').value.trim();
+        const category = document.getElementById('categoryFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        let filteredRequests;
+
+        if (requestId) {
+            // Search by ID using BST search
+            const found = requestBST.searchById(requestId.toUpperCase());
+            filteredRequests = found ? [found] : [];
+        } else {
+            // Filter by category and status
+            filteredRequests = requestBST.filter(category, status);
+            // Sort using BST in-order traversal for optimal ordering
+            filteredRequests = requestBST.inOrderTraversal().filter(req => {
+                const matchesCategory = !category || req.category === category;
+                const matchesStatus = !status || req.status === status;
+                return matchesCategory && matchesStatus;
+            });
+        }
+
+        displayRequests(filteredRequests);
+    }
+
+    // Clear filters
+    function clearFilters() {
+        document.getElementById('requestIdSearch').value = '';
+        document.getElementById('categoryFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        displayRequests(requestBST.inOrderTraversal());
+    }
+
+    // Open request details modal
+    function openRequestModal(requestId) {
+        const request = requestBST.searchById(requestId);
+        if (!request) return;
+
+        document.getElementById('modalRequestTitle').textContent = request.id;
+        document.getElementById('modalRequestStatus').textContent = request.status;
+        document.getElementById('modalRequestId').textContent = request.id;
+        document.getElementById('modalRequestPriority').textContent = request.priority;
+        document.getElementById('modalRequestCategory').textContent = request.category;
+        document.getElementById('modalRequestDate').textContent = request.submittedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        document.getElementById('modalRequestLocation').textContent = request.location;
+        document.getElementById('modalRequestDescription').textContent = request.description;
+
+        // Update status badge color
+        const statusBadge = document.getElementById('modalRequestStatus');
+        const statusClass = `status-${request.status.toLowerCase().replace(' ', '-')}`;
+        statusBadge.className = 'modal-event-badge ' + statusClass;
+
+        // Render timeline
+        const timelineHtml = request.timeline.map(item => `
+            <div class="timeline-item">
+                <div class="timeline-icon" style="background: ${item.color}20; color: ${item.color};">
+                    ${item.icon}
+                </div>
+                <div class="timeline-content">
+                    <h5>${item.status}</h5>
+                    <p>${item.description}</p>
+                    <div class="timeline-date">${item.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${item.date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('modalTimeline').innerHTML = timelineHtml;
+
+        document.getElementById('requestModalOverlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close modal
+    function closeRequestModal() {
+        document.getElementById('requestModalOverlay').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load service requests from server
+        loadServiceRequests();
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', filterRequests);
+        document.getElementById('clearBtn').addEventListener('click', clearFilters);
+        document.getElementById('requestIdSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterRequests();
+            }
+        });
+        document.getElementById('categoryFilter').addEventListener('change', filterRequests);
+        document.getElementById('statusFilter').addEventListener('change', filterRequests);
+
+        // Modal close handlers
+        document.getElementById('closeModalBtn').addEventListener('click', closeRequestModal);
+        document.getElementById('closeModalBtn2').addEventListener('click', closeRequestModal);
+        document.getElementById('requestModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRequestModal();
+            }
+        });
+
+        // ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('requestModalOverlay').style.display === 'flex') {
+                closeRequestModal();
+            }
+        });
+
+        console.log('✅ Service Request Status page initialized with BST');
+    });
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
