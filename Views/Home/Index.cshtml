@@ -9,7 +9,7 @@
         <p>Your gateway to municipal services, community engagement, and local governance. Report issues, stay informed about events, and track service requests all in one place.</p>
         <div class="hero-buttons">
             <a href="@Url.Action("ReportIssues", "Home")" class="btn btn-primary btn-hero">📝 Report an Issue</a>
-            <a href="#" class="btn btn-secondary btn-hero">📊 Check Status</a>
+            <a href="@Url.Action("ServiceRequestStatus", "Home")" class="btn btn-secondary btn-hero">📊 Check Status</a>
         </div>
     </div>
 </div>
@@ -36,11 +36,13 @@
             </a>
         </div>
         <div class="col-lg-4 col-md-6">
-            <div class="service-card service-card-purple">
-                <div class="service-card-icon">📋</div>
-                <h3>Service Status</h3>
-                <p>Check the status of your requests</p>
-            </div>
+            <a href="@Url.Action("ServiceRequestStatus", "Home")" style="text-decoration: none; color: inherit;">
+                <div class="service-card service-card-purple">
+                    <div class="service-card-icon">📋</div>
+                    <h3>Service Status</h3>
+                    <p>Check the status of your requests</p>
+                </div>
+            </a>
         </div>
     </div>
 </div>
@@ -48,7 +50,7 @@
 <!-- Service Impact Section -->
 <div class="service-impact-section">
     <div class="impact-card">
-        <h2 class="text-center mb-5">Service Impact</h2>
+        <h2 class="mb-5 text-center">Service Impact</h2>
         <div class="row text-center">
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="impact-item">

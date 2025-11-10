@@ -90,6 +90,42 @@ namespace PROG7312_POE.Controllers
             return View(events);
         }
 
+        // GET: Home/ServiceRequestStatus
+        public IActionResult ServiceRequestStatus()
+        {
+            return View();
+        }
+
+        // API: Get all service requests as JSON
+        [HttpGet]
+        public async Task<IActionResult> GetServiceRequests()
+        {
+            try
+            {
+                var issues = await _issueReportService.GetAllIssuesAsync();
+                
+                // Transform to a format suitable for the frontend
+                var requests = issues.Select(issue => new
+                {
+                    id = FormatRequestId(issue.Id),
+                    category = issue.Category,
+                    location = issue.Location,
+                    description = issue.Description,
+                    status = GetStatusText(issue.Status),
+                    priority = GetPriorityText(issue.Priority),
+                    submittedDate = issue.ReportedDate.ToString("o"), // ISO 8601 format
+                    lastUpdated = issue.ReportedDate.ToString("o")
+                }).ToList();
+
+                return Json(requests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving service requests");
+                return Json(new List<object>());
+            }
+        }
+
         private void SeedEventsIntoDictionary()
         {
             // Get sample events from the separate data file
@@ -101,6 +137,42 @@ namespace PROG7312_POE.Controllers
             }
             
             _logger.LogInformation($"Seeded {sampleEvents.Count} events into dictionary");
+        }
+
+        // Helper method to format request ID
+        private string FormatRequestId(string id)
+        {
+            // Convert GUID to SR-YYYY-NNNNNN format
+            var hashCode = Math.Abs(id.GetHashCode());
+            var year = DateTime.Now.Year;
+            var number = (hashCode % 999999).ToString("D6");
+            return $"SR-{year}-{number}";
+        }
+
+        // Helper method to convert IssueStatus enum to text
+        private string GetStatusText(IssueStatus status)
+        {
+            return status switch
+            {
+                IssueStatus.Received => "Pending",
+                IssueStatus.UnderReview => "In Progress",
+                IssueStatus.InProgress => "In Progress",
+                IssueStatus.Resolved => "Resolved",
+                _ => "Pending"
+            };
+        }
+
+        // Helper method to convert IssuePriority enum to text
+        private string GetPriorityText(IssuePriority priority)
+        {
+            return priority switch
+            {
+                IssuePriority.Emergency => "Emergency",
+                IssuePriority.High => "High",
+                IssuePriority.Standard => "Medium",
+                IssuePriority.Low => "Low",
+                _ => "Medium"
+            };
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
