@@ -1,17 +1,35 @@
 using PROG7312_POE.Models;
 using PROG7312_POE.Services.DataStructures;
 using PROG7312_POE.Services.Interfaces;
+using PROG7312_POE.Data;
 
 namespace PROG7312_POE.Services
 {
     public class IssueReportRepository : IIssueReportRepository
     {
         private readonly DataStructures.LinkedList<IssueReport> _issues;
+        private bool _isSeeded = false;
 
         // Using a linked list to store issue reports for efficient insertions and deletions
         public IssueReportRepository()
         {
             _issues = new DataStructures.LinkedList<IssueReport>();
+            SeedData();
+        }
+
+        // Seed the repository with sample data
+        private void SeedData()
+        {
+            if (_isSeeded)
+                return;
+
+            var sampleRequests = ServiceRequestSeedData.GetSampleServiceRequests();
+            foreach (var request in sampleRequests)
+            {
+                _issues.Add(request);
+            }
+
+            _isSeeded = true;
         }
 
         // Adding a new issue report to the end of the linked list

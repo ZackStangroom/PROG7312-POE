@@ -7,17 +7,15 @@ namespace PROG7312_POE.Services
     {
         private readonly IIssueReportRepository _repository;
         private readonly ILogger<IssueReportService> _logger;
-        private readonly IWebHostEnvironment _environment;
 
-        // Dependency Injection of repository, logger, and environment
-        public IssueReportService(IIssueReportRepository repository, ILogger<IssueReportService> logger, IWebHostEnvironment environment)
+        // Dependency Injection of repository and logger
+        public IssueReportService(IIssueReportRepository repository, ILogger<IssueReportService> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        // Submit a new issue report
+        // Submit a new issue report (now uses seeded data - this method is kept for backwards compatibility)
         public async Task<bool> SubmitIssueAsync(IssueReportViewModel viewModel)
         {
             try
@@ -25,7 +23,7 @@ namespace PROG7312_POE.Services
                 if (viewModel == null)
                     return false;
 
-                // Validate required fields (MediaAttachment is optional)
+                // Validate required fields
                 if (string.IsNullOrWhiteSpace(viewModel.Location) ||
                     string.IsNullOrWhiteSpace(viewModel.Category) ||
                     string.IsNullOrWhiteSpace(viewModel.Description))
@@ -33,28 +31,11 @@ namespace PROG7312_POE.Services
                     return false;
                 }
 
-                // Initialize file-related variables
-                string? filePath = null;
-                string? fileName = null;
-                string? contentType = null;
-
-                // Handle file upload if present
-                if (viewModel.MediaAttachment != null && viewModel.MediaAttachment.Length > 0)
-                {
-                    var uploadResult = await SaveFileAsync(viewModel.MediaAttachment);
-                    filePath = uploadResult.FilePath;
-                    fileName = uploadResult.FileName;
-                    contentType = uploadResult.ContentType;
-                }
-
-                // Create and store the issue report
+                // Create and store the issue report (without file handling)
                 var report = new IssueReport(
                     viewModel.Location,
                     viewModel.Category,
-                    viewModel.Description,
-                    filePath,
-                    fileName,
-                    contentType
+                    viewModel.Description
                 );
 
                 _repository.Add(report);
@@ -69,42 +50,6 @@ namespace PROG7312_POE.Services
                 // Log any errors during submission
                 _logger.LogError(ex, "Error submitting issue report");
                 return false;
-            }
-        }
-
-        // Save uploaded file and return its path, original name, and content type
-        private async Task<(string? FilePath, string? FileName, string? ContentType)> SaveFileAsync(IFormFile file)
-        {
-            try
-            {
-                // Create uploads directory if it doesn't exist
-                var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "issues");
-                if (!Directory.Exists(uploadsPath))
-                {
-                    Directory.CreateDirectory(uploadsPath);
-                }
-
-                // Generate unique filename
-                var fileExtension = Path.GetExtension(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                var fullPath = Path.Combine(uploadsPath, uniqueFileName);
-
-                // Save file
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                // Return relative path for storage
-                var relativePath = Path.Combine("uploads", "issues", uniqueFileName).Replace("\\", "/");
-                
-                return (relativePath, file.FileName, file.ContentType);
-            }
-            catch (Exception ex)
-            {
-                // Log any errors during file saving
-                _logger.LogError(ex, "Error saving uploaded file");
-                return (null, null, null);
             }
         }
 
