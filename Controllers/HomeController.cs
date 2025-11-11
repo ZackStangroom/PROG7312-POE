@@ -40,35 +40,26 @@ namespace PROG7312_POE.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReportIssues(IssueReportViewModel model)
         {
+            // User submissions are simulated for UI/UX purposes only, seeded data is used
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Simulate issue submission
-                    var success = await _issueReportService.SubmitIssueAsync(model);
-
-                    if (success)
-                    {
-                        // Provide feedback to the user
-                        model.IsSubmitted = true;
-                        model.SubmissionMessage = "Your issue has been successfully submitted! Thank you for helping improve Cape Town.";
-                        
-                        // Clear form data after successful submission
-                        ModelState.Clear();
-                        return View(new IssueReportViewModel 
-                        { 
-                            IsSubmitted = true, 
-                            SubmissionMessage = model.SubmissionMessage 
-                        });
-                    }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, "There was an error submitting your report. Please try again.");
-                    }
+                    // Show success message without actually storing user data
+                    model.IsSubmitted = true;
+                    model.SubmissionMessage = "Thank you for your submission! This is a demonstration system using pre-loaded service requests. Visit the Service Request Status page to view all active requests.";
+                    
+                    // Clear form data after successful submission
+                    ModelState.Clear();
+                    return View(new IssueReportViewModel 
+                    { 
+                        IsSubmitted = true, 
+                        SubmissionMessage = model.SubmissionMessage 
+                    });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error submitting issue report");
+                    _logger.LogError(ex, "Error processing form submission");
                     ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again later.");
                 }
             }
