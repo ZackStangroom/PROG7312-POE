@@ -393,10 +393,37 @@ else
                     .then(data => {
                         console.log('✅ Search tracked:', searchAction);
                         // Update recommendations after tracking
-                        this.updateRecommendations();``
+                        this.updateRecommendations();
                     })
                     .catch(error => console.error('❌ Error tracking search:', error));
                 }, this.searchDelay);
+            }
+
+            // NEW: Track event view immediately (no debouncing for views)
+            trackEventView(eventCategory) {
+                const searchAction = {
+                    searchTerm: null,
+                    category: eventCategory,
+                    dateRange: null,
+                    resultsCount: 1, // Viewing one specific event
+                    timestamp: new Date().toISOString()
+                };
+
+                // Send to server immediately
+                fetch('/api/SearchPattern/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(searchAction)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Event view tracked:', searchAction);
+                    // Update recommendations after viewing
+                    this.updateRecommendations();
+                })
+                .catch(error => console.error('❌ Error tracking event view:', error));
             }
 
             // Fetch and display recommendations
@@ -444,7 +471,7 @@ else
                     🎯 Recommended For You
                     <span style="font-size: 0.8rem; color: #999; margin-left: 10px; font-weight: normal;">(${recommendations.length} events)</span>
                 </h3>
-                <p class="subtitle" style="margin: 5px 0 0 35px;">Based on your search patterns and preferences - Click to expand</p>
+                <p class="subtitle" style="margin: 5px 0 0 35px;">Based on your viewed events and search patterns - Click to expand</p>
             </div>
             <button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation(); searchTracker.viewAnalysis();" 
                     style="flex-shrink: 0;">
@@ -481,7 +508,7 @@ else
                                         `<span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-right: 5px; margin-bottom: 5px;">${reason}</span>`
                                     ).join('')}
                                 </div>
-                                <button class="btn-event-details" data-event-id="${evt.id}">View Details</button>
+                                <button class="btn-event-details" data-event-id="${evt.id}" data-event-category="${evt.category}">View Details</button>
                             </div>
                         </div>
                     `;
@@ -495,6 +522,7 @@ else
         button.addEventListener('click', function(e) {
             e.stopPropagation(); // Prevent triggering the collapse
             const eventId = this.dataset.eventId;
+            const eventCategory = this.dataset.eventCategory;
             // Find the event data from recommendations
             const rec = recommendations.find(r => r.event.id === eventId);
             if (rec) {
@@ -570,7 +598,7 @@ else
                             </div>
                             
                             <div class="alert alert-info" style="margin-top: 15px;">
-                                💡 We use this information to recommend events you'll love!
+                                💡 We use this information to recommend events you'll love! Each time you view an event, we learn more about your preferences.
                             </div>
                         </div>
                         <div class="event-modal-footer">
@@ -659,7 +687,7 @@ else
             peek() {
                 return this.items.length > 0 ? this.items[0] : null;
             }
-            // Gets akk items
+            // Gets all items
             getAll() {
                 return [...this.items];
             }
@@ -824,6 +852,12 @@ else
             if (addToHistory) {
                 viewHistory.push(eventData);
                 updateHistoryUI();
+                
+                
+                if (eventData.category) {
+                    console.log('📌 Tracking event view for category:', eventData.category);
+                    searchTracker.trackEventView(eventData.category);
+                }
             }
             
             // Populate modal
