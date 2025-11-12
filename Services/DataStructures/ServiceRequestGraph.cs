@@ -83,7 +83,7 @@ namespace PROG7312_POE.Services.DataStructures
             }
         }
 
-        // Build relationships automatically based on request properties
+        // build relationships automatically based on request properties
         public void BuildRelationships()
         {
             var allNodes = _nodes.Values.ToList();
@@ -255,7 +255,7 @@ namespace PROG7312_POE.Services.DataStructures
             };
         }
 
-        // Helper: Reset visited flags for traversal
+        // Reset visited flags for traversal
         private void ResetVisited()
         {
             foreach (var node in _nodes.Values)
@@ -264,7 +264,7 @@ namespace PROG7312_POE.Services.DataStructures
             }
         }
 
-        // Helper: Check if two locations are the same (fuzzy matching with edit distance)
+        // Check if two locations are the same (fuzzy matching with edit distance)
         private bool IsSameLocation(string loc1, string loc2)
         {
             if (string.IsNullOrEmpty(loc1) || string.IsNullOrEmpty(loc2))
@@ -285,7 +285,7 @@ namespace PROG7312_POE.Services.DataStructures
             return similarity >= 0.85;
         }
 
-        // Helper: Normalize location string
+        // Normalize location string
         private string NormalizeLocation(string location)
         {
             if (string.IsNullOrEmpty(location))
@@ -297,7 +297,7 @@ namespace PROG7312_POE.Services.DataStructures
                 .Split(new[] { ' ', ',', '.' }, StringSplitOptions.RemoveEmptyEntries));
         }
 
-        // Helper: Calculate location similarity using Levenshtein distance
+        // Calculate location similarity using Levenshtein distance
         private double CalculateLocationSimilarity(string loc1, string loc2)
         {
             if (loc1 == loc2)
@@ -312,7 +312,7 @@ namespace PROG7312_POE.Services.DataStructures
             return 1.0 - ((double)distance / maxLength);
         }
 
-        // Helper: Calculate Levenshtein distance (edit distance)
+        // Calculate Levenshtein distance (edit distance)
         private int LevenshteinDistance(string s1, string s2)
         {
             int[,] dp = new int[s1.Length + 1, s2.Length + 1];
@@ -368,7 +368,7 @@ namespace PROG7312_POE.Services.DataStructures
             return false;
         }
 
-        // Helper: Check if requests might be duplicates
+        // Check if requests might be duplicates
         private bool IsPotentialDuplicate(IssueReport req1, IssueReport req2)
         {
             if (req1 == null || req2 == null)
@@ -391,8 +391,7 @@ namespace PROG7312_POE.Services.DataStructures
             );
             var similarDescription = descriptionSimilarity > 0.7;
 
-            // Consider duplicate if: same category + same location + similar time
-            // OR same category + same location + similar description
+            // Consider duplicate if: same category + same location + similar time or same category + same location + similar description
             return sameCategory && sameLocation && (similarTime || similarDescription);
         }
 
