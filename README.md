@@ -517,6 +517,61 @@ BuildRelationships() analyzes:
 -	35 Potential Duplicates
 
 
+**B. Breadth-First Search (BFS) for Related Requests**
+- **Level-by-Level Relationship Discovery**:
+User clicks on Request SR-2025-001234 (Water leak in Claremont)
+BFS Traversal (max depth = 2):
+Level 0 (Central): SR-2025-001234 ↓ Level 1 (Direct connections - 6 requests):
+-	SR-2025-001189 (Same Location: Claremont water main)
+-	SR-2025-001267 (Same Category: Water leak in Newlands)
+-	SR-2025-001301 (Potential Duplicate: Claremont water issue)
+-	SR-2025-001345 (Related Category: Road damage from water)
+-	SR-2025-001402 (Same Location: Claremont pothole)
+-	SR-2025-001478 (Same Category: Water pressure issue) ↓ Level 2 (Connections of connections - 11 additional requests):
+-	All requests connected to Level 1 nodes
+Total Related: 17 requests found in O(V + E) time Without Graph: Would need O(n²) pairwise comparisons Efficiency Gain: From 2,500 comparisons to ~30 edge traversals
+
+**C. Depth-First Search (DFS) for Type-Specific Relationships**
+- **Exhaustive Exploration by Relationship Type**:
+Query: "Find ALL requests in same location as SR-2025-001234"
+DFS (filtering by SameLocation type):
+
+Starts: SR-2025-001234 (Claremont) Explores: Only SameLocation edges
+
+Discovery Tree: SR-2025-001234 
+
+─> SR-2025-001189 (Claremont water main) 
+
+─> SR-2025-001501 (Claremont street) 
+
+─> SR-2025-001623 (Claremont park)
+
+─> SR-2025-001301 (Claremont sidewalk) 
+
+─> SR-2025-001734 (Claremont lighting)
+
+─> SR-2025-001402 (Claremont pothole)
+
+Result: 7 requests in Claremont area Time: O(V + E) = O(7 + 12) = 19 operations Alternative: O(n) = 50 full scans Efficiency: 2.6x faster
+
+
+**D. Duplicate Detection Through Graph Analysis**
+- **Pattern Recognition for Similar Requests**:
+Real Example: SR-2025-001234: "Water leak on Church St, Claremont" (Submitted Mon 9:00 AM) SR-2025-001301: "Burst pipe Church Street Claremont" (Submitted Mon 11:30 AM)
+Graph Analysis:
+1.	Same Location check: "Church St, Claremont" vs "Church Street Claremont" Fuzzy Match Score: 95% → TRUE
+2.	Same Category: "Water & Sanitation" vs "Water & Sanitation" → TRUE
+3.	Temporal Proximity: 2.5 hours apart → TRUE (< 48 hours)
+4.	Combined Score: 0.95 (weight) → Potential Duplicate Edge created
+
+UI Impact:
+-	Red warning shown in related requests
+-	Suggestion: "This may be a duplicate of SR-2025-001234"
+-	Staff can merge requests, saving resources
+
+Without Graph: No automatic duplicate detection Resource Waste: Two teams dispatched for same issue With Graph: Instant identification, one team dispatched
+
+
 ## Video Link
 - Part 1: https://youtu.be/JXvtLSPzcg8
 - Part 2: https://youtu.be/k6yIAYmmE9c
