@@ -242,6 +242,21 @@
                     <!-- Timeline will be populated here -->
                 </div>
             </div>
+
+            <div class="modal-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4>🔗 Related Requests <span style="font-size: 0.75rem; color: #999; font-weight: normal;">⚡ Graph Traversal</span></h4>
+                    <button class="btn-view-graph" id="viewGraphBtn" onclick="openGraphVisualization(currentRequestId)">
+                        📊 View Graph
+                    </button>
+                </div>
+                <div id="modalRelatedRequests" class="related-requests-container">
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+                        <p>Loading related requests...</p>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="event-modal-footer">
             <button class="btn-modal-close" id="closeModalBtn2">Close</button>
@@ -249,7 +264,63 @@
     </div>
 </div>
 
+<!-- Graph Visualization Modal -->
+<div class="graph-modal-overlay" id="graphModalOverlay" style="display: none;">
+    <div class="graph-modal">
+        <div class="graph-modal-header">
+            <h2 id="graphModalTitle">Request Relationship Graph</h2>
+            <button class="graph-modal-close" id="closeGraphBtn">&times;</button>
+        </div>
+        <div class="graph-modal-body">
+            <div class="graph-info-bar">
+                <div class="graph-stat">
+                    <span class="graph-stat-label">Central Request:</span>
+                    <span class="graph-stat-value" id="centralRequestId">-</span>
+                </div>
+                <div class="graph-stat">
+                    <span class="graph-stat-label">Related Requests:</span>
+                    <span class="graph-stat-value" id="relatedCount">0</span>
+                </div>
+                <div class="graph-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4285f4;"></div>
+                        <span>Same Location</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #34a853;"></div>
+                        <span>Same Category</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #fbbc04;"></div>
+                        <span>Related Category</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ea4335;"></div>
+                        <span>Potential Duplicate</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="graphVisualization" class="graph-visualization">
+                <!-- Graph will be rendered here -->
+            </div>
+
+            <div class="graph-details">
+                <h4>Connection Details</h4>
+                <div id="graphConnectionsList" class="connections-list">
+                    <!-- Connection details will populate here -->
+                </div>
+            </div>
+        </div>
+        <div class="graph-modal-footer">
+            <button class="btn-modal-close" id="closeGraphBtn2">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    let currentRequestId = null;
+
     // Service Request class
     class ServiceRequest {
         constructor(id, category, location, description, status, priority, submittedDate, lastUpdated) {
@@ -569,10 +640,276 @@
         displayRequests(requestBST.inOrderTraversal());
     }
 
+    // Load related requests
+    async function loadRelatedRequests(requestId) {
+        try {
+            const response = await fetch(`@Url.Action("GetRelatedRequests", "Home")?requestId=${encodeURIComponent(requestId)}`);
+            const relatedRequests = await response.json();
+
+            const container = document.getElementById('modalRelatedRequests');
+            
+            if (relatedRequests.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #999;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🔍</div>
+                        <p>No related requests found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = relatedRequests.slice(0, 5).map(req => `
+                <div class="related-request-item" onclick="closeRequestModal(); setTimeout(() => openRequestModal('${req.id}'), 300);" style="cursor: pointer;">
+                    <div class="related-request-header">
+                        <span class="related-request-id">${req.id}</span>
+                        <span class="request-status-badge status-${req.status.toLowerCase().replace('', '-')}">${req.status}</span>
+                    </div>
+                    <div class="related-request-info">
+                        <div>📂 ${req.category}</div>
+                        <div>📍 ${req.location}</div>
+                    </div>
+                    <div class="related-request-description">${req.description.substring(0, 80)}${req.description.length > 80 ? '...' : ''}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('Error loading related requests:', error);
+            document.getElementById('modalRelatedRequests').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #f44336;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">❌</div>
+                    <p>Failed to load related requests</p>
+                </div>
+            `;
+        }
+    }
+
+    // Open graph visualization modal
+    async function openGraphVisualization(requestId) {
+        currentRequestId = requestId;
+        
+        document.getElementById('graphModalOverlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        document.getElementById('centralRequestId').textContent = requestId;
+        document.getElementById('graphVisualization').innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">⏳</div>
+                <h4>Building Graph...</h4>
+                <p>Analyzing relationships between service requests</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`@Url.Action("GetRelatedRequests", "Home")?requestId=${encodeURIComponent(requestId)}`);
+            const relatedRequests = await response.json();
+            
+            document.getElementById('relatedCount').textContent = relatedRequests.length;
+            
+            // Render the graph
+            renderGraph(requestId, relatedRequests);
+            renderConnectionDetails(requestId, relatedRequests);
+        } catch (error) {
+            console.error('Error loading graph data:', error);
+            document.getElementById('graphVisualization').innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #f44336;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
+                    <h4>Error Loading Graph</h4>
+                    <p>Failed to load relationship data</p>
+                </div>
+            `;
+        }
+    }
+
+    // Render graph visualization
+    function renderGraph(centralId, relatedRequests) {
+        const container = document.getElementById('graphVisualization');
+        
+        if (relatedRequests.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #666;">
+                    <div style="font-size: 3.5rem; margin-bottom: 15px;">🔍</div>
+                    <h4 style="color: #333; font-weight: 600;">No Related Requests</h4>
+                    <p style="color: #666;">This request has no related connections in the system</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Create SVG-like visualization using HTML/CSS
+        const centralRequest = requestBST.searchById(centralId);
+        const angleStep = (2 * Math.PI) / relatedRequests.length;
+        const radius = 200; 
+        const centerX = 280;
+        const centerY = 280;
+
+        let html = `<div class="graph-container" style="position: relative; width: 560px; height: 560px; margin: 0 auto;">`;
+        
+        // Draw connections first (so they appear behind nodes)
+        relatedRequests.forEach((req, index) => {
+            const angle = index * angleStep - Math.PI / 2; // Start from top
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            
+            // Determine connection type and color
+            const connectionType = determineConnectionType(centralRequest, req);
+            const connectionColor = getConnectionColor(connectionType);
+            
+            // Draw line (connection)
+            const lineAngle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI;
+            const lineLength = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)) - 60; // Adjust for node size
+            
+            html += `
+                <div class="graph-connection" style="
+                    left: ${centerX}px; 
+                    top: ${centerY}px; 
+                    width: ${lineLength}px; 
+                    transform: rotate(${lineAngle}deg);
+                    background: ${connectionColor};
+                    color: ${connectionColor};
+                " title="${getConnectionTypeLabel(connectionType)}"></div>
+            `;
+        });
+        
+        // Draw central node
+        const centralPriorityEmoji = {
+            'Emergency': '🔴',
+            'High': '🟠',
+            'Medium': '🟡',
+            'Low': '🟢'
+        };
+        
+        html += `
+            <div class="graph-node graph-node-central" 
+                 style="left: ${centerX}px; top: ${centerY}px;" 
+                 title="${centralId}&#10;Category: ${centralRequest.category}&#10;Status: ${centralRequest.status}&#10;Priority: ${centralRequest.priority}">
+                <div class="node-icon">${centralPriorityEmoji[centralRequest.priority] || '📋'}</div>
+                <div class="node-label">${centralId.substring(0, 15)}...</div>
+            </div>
+        `;
+
+        // Draw related nodes
+        relatedRequests.forEach((req, index) => {
+            const angle = index * angleStep - Math.PI / 2; // Start from top
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            
+            const statusClass = `status-${req.status.toLowerCase().replace(' ', '-')}`;
+            const priorityEmoji = {
+                'Emergency': '🔴',
+                'High': '🟠',
+                'Medium': '🟡',
+                'Low': '🟢'
+            };
+            
+            html += `
+                <div class="graph-node graph-node-related ${statusClass}" 
+                     style="left: ${x}px; top: ${y}px;"
+                     onclick="closeGraphModal(); setTimeout(() => openRequestModal('${req.id}'), 300);"
+                     title="${req.id}&#10;Category: ${req.category}&#10;Location: ${req.location}&#10;Status: ${req.status}&#10;Priority: ${req.priority}">
+                    <div class="node-icon">${priorityEmoji[req.priority] || '📄'}</div>
+                    <div class="node-label">${req.id.substring(0, 12)}...</div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    // Get connection type label for tooltip
+    function getConnectionTypeLabel(type) {
+        const labels = {
+            'location': 'Same Location',
+            'category': 'Same Category',
+            'related': 'Related Category',
+            'duplicate': 'Potential Duplicate'
+        };
+        return labels[type] || 'Related';
+    }
+
+    // Determine connection type between requests
+    function determineConnectionType(req1, req2) {
+        if (!req1 || !req2) return 'related';
+        
+        const sameLocation = req1.location.toLowerCase().includes(req2.location.toLowerCase()) || 
+                           req2.location.toLowerCase().includes(req1.location.toLowerCase());
+        const sameCategory = req1.category === req2.category;
+        
+        if (sameLocation && sameCategory) return 'duplicate';
+        if (sameLocation) return 'location';
+        if (sameCategory) return 'category';
+        return 'related';
+    }
+
+    // Get color for connection type
+    function getConnectionColor(type) {
+        const colors = {
+            'location': '#4285f4',
+            'category': '#34a853',
+            'related': '#fbbc04',
+            'duplicate': '#ea4335'
+        };
+        return colors[type] || '#999';
+    }
+
+    // Render connection details list
+    function renderConnectionDetails(centralId, relatedRequests) {
+        const container = document.getElementById('graphConnectionsList');
+        const centralRequest = requestBST.searchById(centralId);
+        
+        if (relatedRequests.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No connections to display</p>';
+            return;
+        }
+
+        const html = relatedRequests.map(req => {
+            const connectionType = determineConnectionType(centralRequest, req);
+            const typeLabels = {
+                'location': '📍 Same Location',
+                'category': '📂 Same Category',
+                'related': '🔗 Related Category',
+                'duplicate': '⚠️ Potential Duplicate'
+            };
+            const typeColors = {
+                'location': '#4285f4',
+                'category': '#34a853',
+                'related': '#fbbc04',
+                'duplicate': '#ea4335'
+            };
+            
+            return `
+                <div class="connection-item" onclick="closeGraphModal(); setTimeout(() => openRequestModal('${req.id}'), 300);">
+                    <div class="connection-header">
+                        <span class="connection-id">📋 ${req.id}</span>
+                        <span class="connection-type" style="background: ${typeColors[connectionType]}; color: white;">
+                            ${typeLabels[connectionType]}
+                        </span>
+                    </div>
+                    <div class="connection-details">
+                        <div>📂 ${req.category}</div>
+                        <div>📍 ${req.location}</div>
+                        <div>📊 ${req.status}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    // Close graph modal
+    function closeGraphModal() {
+        document.getElementById('graphModalOverlay').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
     // Open request details modal
     function openRequestModal(requestId) {
         const request = requestBST.searchById(requestId);
         if (!request) return;
+
+        currentRequestId = requestId;
 
         document.getElementById('modalRequestTitle').textContent = request.id;
         document.getElementById('modalRequestStatus').textContent = request.status;
@@ -602,6 +939,9 @@
             </div>
         `).join('');
         document.getElementById('modalTimeline').innerHTML = timelineHtml;
+
+        // Load related requests
+        loadRelatedRequests(request.id);
 
         document.getElementById('requestModalOverlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -638,14 +978,27 @@
             }
         });
 
-        // ESC key to close modal
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('requestModalOverlay').style.display === 'flex') {
-                closeRequestModal();
+        // Graph modal close handlers
+        document.getElementById('closeGraphBtn').addEventListener('click', closeGraphModal);
+        document.getElementById('closeGraphBtn2').addEventListener('click', closeGraphModal);
+        document.getElementById('graphModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeGraphModal();
             }
         });
 
-        console.log('✅ Service Request Status page initialized with BST');
+        // ESC key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('graphModalOverlay').style.display === 'flex') {
+                    closeGraphModal();
+                } else if (document.getElementById('requestModalOverlay').style.display === 'flex') {
+                    closeRequestModal();
+                }
+            }
+        });
+
+        console.log('✅ Service Request Status page initialized with BST and Graph');
     });
 </script>
 

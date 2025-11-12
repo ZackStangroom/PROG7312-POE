@@ -18,6 +18,7 @@ namespace PROG7312_POE
             builder.Services.AddSingleton<IEventRepository, EventRepository>();
             builder.Services.AddSingleton<ISearchPatternService, SearchPatternService>();
             builder.Services.AddScoped<ServiceRequestBSTService>();
+            builder.Services.AddScoped<ServiceRequestGraphService>();
 
             var app = builder.Build();
 

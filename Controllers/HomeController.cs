@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PROG7312_POE.Models;
 using PROG7312_POE.Services.Interfaces;
 using PROG7312_POE.Data;
+using PROG7312_POE.Services;
 
 namespace PROG7312_POE.Controllers
 {
@@ -11,12 +12,18 @@ namespace PROG7312_POE.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IIssueReportService _issueReportService;
         private readonly IEventRepository _eventRepository;
+        private readonly ServiceRequestGraphService _graphService;
 
-        public HomeController(ILogger<HomeController> logger, IIssueReportService issueReportService, IEventRepository eventRepository)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            IIssueReportService issueReportService, 
+            IEventRepository eventRepository,
+            ServiceRequestGraphService graphService)
         {
             _logger = logger;
             _issueReportService = issueReportService;
             _eventRepository = eventRepository;
+            _graphService = graphService;
         }
 
         public IActionResult Index()
@@ -114,6 +121,64 @@ namespace PROG7312_POE.Controllers
             {
                 _logger.LogError(ex, "Error retrieving service requests");
                 return Json(new List<object>());
+            }
+        }
+
+        // API: Get related requests using graph traversal
+        [HttpGet]
+        public async Task<IActionResult> GetRelatedRequests(string requestId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(requestId))
+                {
+                    return Json(new List<object>());
+                }
+
+                // Find the actual request ID from formatted ID
+                var allIssues = await _issueReportService.GetAllIssuesAsync();
+                var actualRequest = allIssues.FirstOrDefault(i => FormatRequestId(i.Id) == requestId);
+                
+                if (actualRequest == null)
+                {
+                    return Json(new List<object>());
+                }
+
+                var relatedRequests = await _graphService.GetRelatedRequestsAsync(actualRequest.Id, 2);
+                
+                var formattedRequests = relatedRequests.Select(issue => new
+                {
+                    id = FormatRequestId(issue.Id),
+                    category = issue.Category,
+                    location = issue.Location,
+                    description = issue.Description,
+                    status = GetStatusText(issue.Status),
+                    priority = GetPriorityText(issue.Priority),
+                    submittedDate = issue.ReportedDate.ToString("o")
+                }).ToList();
+
+                return Json(formattedRequests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving related requests for {RequestId}", requestId);
+                return Json(new List<object>());
+            }
+        }
+
+        // API: Get graph statistics
+        [HttpGet]
+        public async Task<IActionResult> GetGraphStatistics()
+        {
+            try
+            {
+                var stats = await _graphService.GetGraphStatisticsAsync();
+                return Json(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving graph statistics");
+                return Json(new { error = "Failed to retrieve statistics" });
             }
         }
 
