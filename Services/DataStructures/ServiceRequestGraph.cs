@@ -1,4 +1,32 @@
-using PROG7312_POE.Models;
+// References:
+// Graph Theory:
+// - Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). Introduction to Algorithms (3rd ed.). MIT Press.
+//   Chapter 22: Elementary Graph Algorithms
+//   https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/
+//
+// Breadth-First Search (BFS):
+// - GeeksforGeeks. (2024). Breadth First Search or BFS for a Graph.
+//   https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
+//
+// Depth-First Search (DFS):
+// - GeeksforGeeks. (2024). Depth First Search or DFS for a Graph.
+//   https://www.geeksforgeeks.org/depth-first-search-or-dfs-for-a-graph/
+//
+// Shortest Path Algorithm:
+// - Dijkstra, E. W. (1959). A note on two problems in connexion with graphs. Numerische Mathematik, 1, 269-271.
+//   https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+//
+// Levenshtein Distance:
+// - Levenshtein, V. I. (1966). Binary codes capable of correcting deletions, insertions, and reversals.
+//   Soviet Physics Doklady, 10(8), 707-710.
+// - Wikipedia. (2024). Levenshtein distance.
+//   https://en.wikipedia.org/wiki/Levenshtein_distance
+//
+// String Similarity Algorithms:
+// - GeeksforGeeks. (2024). Edit Distance | DP-5.
+//   https://www.geeksforgeeks.org/edit-distance-dp-5/
+
+using PROG7312_POE.Models;  
 
 namespace PROG7312_POE.Services.DataStructures
 {
@@ -133,6 +161,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Get all related requests using BFS (Breadth-First Search)
+        // Reference: Cormen et al. (2009), Chapter 22.2: Breadth-First Search
         public List<IssueReport> GetRelatedRequests(string requestId, int maxDepth = 2)
         {
             if (!_nodes.ContainsKey(requestId))
@@ -172,6 +201,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Get related requests by specific relationship type using DFS (Depth-First Search)
+        // Reference: Cormen et al. (2009), Chapter 22.3: Depth-First Search
         public List<IssueReport> GetRelatedRequestsByType(string requestId, RelationType relationType)
         {
             if (!_nodes.ContainsKey(requestId))
@@ -205,6 +235,8 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Find shortest path between two requests (could represent dependency chain)
+        // Reference: Modified BFS for unweighted shortest path
+        // See: https://www.geeksforgeeks.org/shortest-path-unweighted-graph/
         public List<IssueReport> FindShortestPath(string startId, string endId)
         {
             if (!_nodes.ContainsKey(startId) || !_nodes.ContainsKey(endId))
@@ -313,6 +345,8 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Calculate Levenshtein distance (edit distance)
+        // Reference: Levenshtein, V. I. (1966). Binary codes capable of correcting deletions, insertions, and reversals.
+        // Implementation based on: https://en.wikipedia.org/wiki/Levenshtein_distance
         private int LevenshteinDistance(string s1, string s2)
         {
             int[,] dp = new int[s1.Length + 1, s2.Length + 1];

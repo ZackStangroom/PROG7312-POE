@@ -1,3 +1,21 @@
+// References:
+// Binary Search Trees:
+// - Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). Introduction to Algorithms (3rd ed.). MIT Press.
+//   Chapter 12: Binary Search Trees
+//   https://mitpress.mit.edu/9780262033848/introduction-to-algorithms/
+//
+// Tree Traversals:
+// - GeeksforGeeks. (2024). Tree Traversals (Inorder, Preorder and Postorder).
+//   https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/
+//
+// Generic Types in C#:
+// - Microsoft. (2024). Generic classes and methods.
+//   https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/generics
+//
+// IComparer Interface:
+// - Microsoft. (2024). IComparer<T> Interface.
+//   https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.icomparer-1
+
 namespace PROG7312_POE.Services.DataStructures
 {
 
@@ -82,6 +100,7 @@ namespace PROG7312_POE.Services.DataStructures
 
 
         // Get all items in sorted order using in-order traversal
+        // Reference: In-order traversal visits left subtree, root, then right subtree
         public List<T> InOrderTraversal()
         {
             var result = new List<T>();
@@ -100,6 +119,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Get all items in pre-order traversal
+        // Reference: Pre-order traversal visits root, left subtree, then right subtree
         public List<T> PreOrderTraversal()
         {
             var result = new List<T>();
@@ -118,6 +138,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Get all items in post-order traversal
+        // Reference: Post-order traversal visits left subtree, right subtree, then root
         public List<T> PostOrderTraversal()
         {
             var result = new List<T>();

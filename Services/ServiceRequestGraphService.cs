@@ -1,3 +1,16 @@
+// References:
+// Service Layer Pattern:
+// - Fowler, M. (2002). Patterns of Enterprise Application Architecture. Addison-Wesley.
+//   https://martinfowler.com/eaaCatalog/serviceLayer.html
+//
+// Dependency Injection in ASP.NET Core:
+// - Microsoft. (2024). Dependency injection in ASP.NET Core.
+//   https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
+//
+// Async/Await Best Practices:
+// - Microsoft. (2024). Asynchronous programming with async and await.
+//   https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
+
 using PROG7312_POE.Models;
 using PROG7312_POE.Services.DataStructures;
 using PROG7312_POE.Services.Interfaces;

@@ -10,6 +10,7 @@ namespace PROG7312_POE.Services.DataStructures
         public bool IsEmpty => _head == null;
 
         // Adds an item to the end of the list
+        // Reference: Cormen et al. (2009), Chapter 10.2 - List insertion at tail
         public void Add(T item)
         {
             var newNode = new Node<T>(item);
@@ -30,6 +31,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Adds an item to the beginning of the list
+        // Reference: Cormen et al. (2009), Chapter 10.2 - List insertion at head
         public void AddFirst(T item)
         {
             var newNode = new Node<T>(item);
@@ -61,6 +63,8 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Removes the first occurrence of the specified item from the list
+        // Reference: Cormen et al. (2009), Chapter 10.2 - List deletion
+        // Implementation uses linear search: https://www.geeksforgeeks.org/linear-search/
         public bool Remove(T item)
         {
             var current = _head;
@@ -80,6 +84,8 @@ namespace PROG7312_POE.Services.DataStructures
 
 
         // Removes the first item from the list
+        // Reference: Doubly linked list node removal maintains Previous and Next pointers
+        // See: https://www.geeksforgeeks.org/delete-a-node-in-a-doubly-linked-list/
         private void RemoveNode(Node<T> node)
         {
             if (node.Previous != null)
@@ -104,6 +110,8 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Finds all items that match the given predicate
+        // Reference: Linear traversal with predicate filtering
+        // See: https://www.geeksforgeeks.org/search-an-element-in-a-linked-list-iterative-and-recursive/
         public LinkedList<T> FindAll(Func<T, bool> predicate)
         {
             var result = new LinkedList<T>();
@@ -122,6 +130,7 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Finds the first item that matches the given predicate
+        // Reference: Linear search with early termination
         public T? Find(Func<T, bool> predicate)
         {
             var current = _head;
@@ -139,6 +148,8 @@ namespace PROG7312_POE.Services.DataStructures
         }
 
         // Executes the given action for each item in the list
+        // Reference: Iterator pattern implementation
+        // See: https://www.geeksforgeeks.org/iterators-c-stl/
         public void ForEach(Action<T> action)
         {
             var current = _head;
@@ -154,6 +165,8 @@ namespace PROG7312_POE.Services.DataStructures
     }
 
     // Node class representing each element in the linked list
+    // Reference: Doubly linked list node structure with Previous and Next pointers
+    // Cormen et al. (2009), Chapter 10.2
     internal class Node<T>
     {
         public T? Data { get; set; }
