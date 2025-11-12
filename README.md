@@ -571,7 +571,11 @@ UI Impact:
 
 Without Graph: No automatic duplicate detection Resource Waste: Two teams dispatched for same issue With Graph: Instant identification, one team dispatched
 
+## Feedback Implemented
+- Tried to use less AI code
+
 
 ## Video Link
 - Part 1: https://youtu.be/JXvtLSPzcg8
 - Part 2: https://youtu.be/k6yIAYmmE9c
+- Part 3: https://youtu.be/Y6Ujw-1qfWI
