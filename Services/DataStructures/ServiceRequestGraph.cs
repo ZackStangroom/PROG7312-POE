@@ -264,24 +264,90 @@ namespace PROG7312_POE.Services.DataStructures
             }
         }
 
-        // Helper: Check if two locations are the same (fuzzy matching)
+        // Helper: Check if two locations are the same (fuzzy matching with edit distance)
         private bool IsSameLocation(string loc1, string loc2)
         {
             if (string.IsNullOrEmpty(loc1) || string.IsNullOrEmpty(loc2))
                 return false;
 
-            // Normalize and compare
-            var normalized1 = loc1.Trim().ToLower();
-            var normalized2 = loc2.Trim().ToLower();
+            // Normalize locations
+            var normalized1 = NormalizeLocation(loc1);
+            var normalized2 = NormalizeLocation(loc2);
 
-            return normalized1 == normalized2 || 
-                   normalized1.Contains(normalized2) || 
-                   normalized2.Contains(normalized1);
+            // Exact match
+            if (normalized1 == normalized2)
+                return true;
+
+            // Calculate similarity using Levenshtein distance
+            double similarity = CalculateLocationSimilarity(normalized1, normalized2);
+            
+            // Consider same location if similarity >= 85%
+            return similarity >= 0.85;
+        }
+
+        // Helper: Normalize location string
+        private string NormalizeLocation(string location)
+        {
+            if (string.IsNullOrEmpty(location))
+                return string.Empty;
+
+            // Convert to lowercase, remove extra whitespace, trim
+            return string.Join(" ", location.Trim()
+                .ToLower()
+                .Split(new[] { ' ', ',', '.' }, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        // Helper: Calculate location similarity using Levenshtein distance
+        private double CalculateLocationSimilarity(string loc1, string loc2)
+        {
+            if (loc1 == loc2)
+                return 1.0;
+
+            int distance = LevenshteinDistance(loc1, loc2);
+            int maxLength = Math.Max(loc1.Length, loc2.Length);
+
+            if (maxLength == 0)
+                return 1.0;
+
+            return 1.0 - ((double)distance / maxLength);
+        }
+
+        // Helper: Calculate Levenshtein distance (edit distance)
+        private int LevenshteinDistance(string s1, string s2)
+        {
+            int[,] dp = new int[s1.Length + 1, s2.Length + 1];
+
+            // Initialize base cases
+            for (int i = 0; i <= s1.Length; i++)
+                dp[i, 0] = i;
+            
+            for (int j = 0; j <= s2.Length; j++)
+                dp[0, j] = j;
+
+            // Fill the dynamic programming table
+            for (int i = 1; i <= s1.Length; i++)
+            {
+                for (int j = 1; j <= s2.Length; j++)
+                {
+                    int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+
+                    dp[i, j] = Math.Min(
+                        Math.Min(dp[i - 1, j] + 1,      // Deletion
+                                 dp[i, j - 1] + 1),      // Insertion
+                                 dp[i - 1, j - 1] + cost // Substitution
+                    );
+                }
+            }
+
+            return dp[s1.Length, s2.Length];
         }
 
         // Helper: Check if categories are related
         private bool AreRelatedCategories(string cat1, string cat2)
         {
+            if (string.IsNullOrEmpty(cat1) || string.IsNullOrEmpty(cat2))
+                return false;
+
             var relatedCategories = new Dictionary<string, List<string>>
             {
                 { "Water & Sanitation", new List<string> { "Roads & Transport", "Waste Management" } },
@@ -290,12 +356,13 @@ namespace PROG7312_POE.Services.DataStructures
                 { "Waste Management", new List<string> { "Water & Sanitation", "Parks & Recreation" } },
                 { "Parks & Recreation", new List<string> { "Waste Management", "Public Safety" } },
                 { "Emergency Services", new List<string> { "Public Safety", "Electricity" } },
-                { "Public Safety", new List<string> { "Emergency Services", "Electricity" } }
+                { "Public Safety", new List<string> { "Emergency Services", "Electricity", "Parks & Recreation" } },
+                { "Housing", new List<string> { "Water & Sanitation", "Electricity" } }
             };
 
             if (relatedCategories.ContainsKey(cat1))
             {
-                return relatedCategories[cat1].Contains(cat2);
+                return relatedCategories[cat1].Contains(cat2, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;
@@ -304,11 +371,29 @@ namespace PROG7312_POE.Services.DataStructures
         // Helper: Check if requests might be duplicates
         private bool IsPotentialDuplicate(IssueReport req1, IssueReport req2)
         {
-            var sameCategory = req1.Category.Equals(req2.Category, StringComparison.OrdinalIgnoreCase);
-            var sameLocation = IsSameLocation(req1.Location, req2.Location);
-            var similarTime = Math.Abs((req1.ReportedDate - req2.ReportedDate).TotalDays) < 2;
+            if (req1 == null || req2 == null)
+                return false;
 
-            return sameCategory && sameLocation && similarTime;
+            // Check if same category
+            var sameCategory = req1.Category.Equals(req2.Category, StringComparison.OrdinalIgnoreCase);
+            
+            // Check if same location (using the improved fuzzy matching)
+            var sameLocation = IsSameLocation(req1.Location, req2.Location);
+            
+            // Check if reported within 48 hours of each other
+            var timeDifference = Math.Abs((req1.ReportedDate - req2.ReportedDate).TotalHours);
+            var similarTime = timeDifference < 48;
+
+            // Calculate description similarity
+            var descriptionSimilarity = CalculateLocationSimilarity(
+                NormalizeLocation(req1.Description), 
+                NormalizeLocation(req2.Description)
+            );
+            var similarDescription = descriptionSimilarity > 0.7;
+
+            // Consider duplicate if: same category + same location + similar time
+            // OR same category + same location + similar description
+            return sameCategory && sameLocation && (similarTime || similarDescription);
         }
 
         // Helper: Get most connected request
@@ -317,8 +402,14 @@ namespace PROG7312_POE.Services.DataStructures
             if (_nodes.Count == 0)
                 return "None";
 
-            var mostConnected = _nodes.Values.OrderByDescending(n => n.Connections.Count).FirstOrDefault();
-            return mostConnected != null ? $"{mostConnected.Request.Id} ({mostConnected.Connections.Count} connections)" : "None";
+            var mostConnected = _nodes.Values
+                .OrderByDescending(n => n.Connections.Count)
+                .FirstOrDefault();
+
+            if (mostConnected == null)
+                return "None";
+
+            return $"{mostConnected.Request.Id} ({mostConnected.Connections.Count} connections)";
         }
 
         // Helper: Get distribution of relationship types
@@ -331,10 +422,12 @@ namespace PROG7312_POE.Services.DataStructures
                 foreach (var edge in node.Connections)
                 {
                     var typeName = edge.RelationType.ToString();
+                    
                     if (!distribution.ContainsKey(typeName))
                     {
                         distribution[typeName] = 0;
                     }
+                    
                     distribution[typeName]++;
                 }
             }
